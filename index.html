@@ -12,11 +12,23 @@
 	<!--<script src="http://code.jquery.com/ui/1.9.1/jquery-ui.js"></script>-->
 	<script type="text/javascript" src="/assets/js/jquery.fancybox.pack.js?v=2.1.3"></script>
 	<script src="/scheduler/assets/js/knockout.js"></script>
+	<script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+	<script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
 	<style type="text/css">
+	body { font-family: arial;}
+	section { float: left; width: 250px; margin: 5px; padding: 10px; box-sizing: border-box; background: #EEE;}
+	ul { padding: 0; list-style: none;}
+	h1 { margin-top: 0; text-align: center; font-size: 1.3em;}
+	.day>strong { font-size: 14px; border-bottom: 1px solid #AAA; display: block; padding: 0 10px 3px; margin: 0 -10px 10px; }
+	.tasks { height: 200px; padding: 3px; margin: 0;}
+	.tasks.am { background: orange;}
+	.tasks.pm { background: maroon;}
+	.task { box-sizing: border-box; background: #CCC; padding: 8px; font-size: 12px;}
+	.task:nth-child(2n) { background: #AAA;}
 	</style>
 </head>
 <body>
-	<div class="container">
+	<div class="container" data-bind="style: { width: (users().length+1)*260 + 'px' }">
 		<section class="tickets" data-bind="visible: tickets().length">
 			<h1>Tickets</h1>
 			<ul data-bind="foreach: tickets">
@@ -31,7 +43,10 @@
 						<strong data-bind="text: date.toDateString()"></strong>
 						<!-- ko foreach: [9, 13]-->
 						<ul class="tasks" data-bind="css: $data == 9? 'am' : 'pm', foreach: $parent.tasks($parents[1], $data)">
-							<li class="task" data-bind="text: ticket.summary, style: {fontSize: size()}, css: 'task-' + id"></li>
+							<li class="task" data-bind="style: {height: size()}, css: 'task-' + id">
+								<strong data-bind="text: ticket.summary"></strong>
+								<div data-bind="text: getStatus()"></div>
+							</li>
 						</ul>
 						<!-- /ko -->
 					</div>
@@ -48,8 +63,12 @@
 		this.ticket = data.ticket || {};
 		this.estimatedTime = ko.observable(data.estimatedTime || 1);
 		this.date = new Date(data.date) || new Date();
+		this.status = ko.observable(data.task_status_uid);
 		this.size = function() {
-			return (self.estimatedTime() * 10) + 'px';
+			return (self.estimatedTime() * 50) + 'px';
+		}
+		this.getStatus = function() {
+			return self.taskStatuses[self.status()];
 		}
 	}
 
@@ -92,6 +111,7 @@
 		scheduler.tickets(data.tickets.map(function(ticket) {
 			return new Ticket(ticket);
 		}));
+		Task.prototype.taskStatuses = data.taskStatuses;
 		scheduler.users(data.users.map(function(user) {
 			user.tasks = (user.tasks || []).map(function(task) {
 				task.ticket = ko.utils.arrayFirst(scheduler.tickets(), function(ticket) {
@@ -101,6 +121,7 @@
 			});
 			return new User(user);
 		}));
+		$('.task').draggable({snap: '.tasks'});
 	});
 
 	ko.applyBindings(scheduler);
