@@ -17,7 +17,7 @@
 </head>
 <body>
 	<div class="container">
-		<section class="tickets">
+		<section class="tickets" data-bind="visible: tickets().length">
 			<h1>Tickets</h1>
 			<ul data-bind="foreach: tickets">
 				<li class="ticket" data-bind="css: 'ticket-' + id, text: summary"></li>
@@ -30,8 +30,8 @@
 					<div class="day" data-bind="css: date.getDate()">
 						<strong data-bind="text: date.toDateString()"></strong>
 						<!-- ko foreach: [9, 13]-->
-						<ul class="tasks am" data-bind="foreach: $parent.tasks($parents[1], $data)">
-							<li class="task" data-bind="text: ticket.summary, style: {fontSize: height()}, css: 'task-' + id"></li>
+						<ul class="tasks" data-bind="css: $data == 9? 'am' : 'pm', foreach: $parent.tasks($parents[1], $data)">
+							<li class="task" data-bind="text: ticket.summary, style: {fontSize: size()}, css: 'task-' + id"></li>
 						</ul>
 						<!-- /ko -->
 					</div>
@@ -40,26 +40,29 @@
 		</div>
 	</div>
 	<script>
+
 	function Task(data)
 	{
 		var self = this;
-		this.id = data.id || 0;
-		this.ticket = data.ticket;
+		this.id = data.uid || 0;
+		this.ticket = data.ticket || {};
 		this.estimatedTime = ko.observable(data.estimatedTime || 1);
-		this.date = data.date || new Date();
-		this.height = function() {
+		this.date = new Date(data.date) || new Date();
+		this.size = function() {
 			return (self.estimatedTime() * 10) + 'px';
 		}
 	}
-	function Ticket(summary)
+
+	function Ticket(data)
 	{
-		this.id = 0;
-		this.summary = summary;
+		this.id = data.uid || 0;
+		this.summary = data.summary;
 	}
-	function User(name, tasks)
+
+	function User(data)
 	{
-		this.name = name;
-		this.tasks = ko.observableArray(tasks);
+		this.name = data.name;
+		this.tasks = ko.observableArray(data.tasks);
 	}
 
 	function Day(date)
@@ -75,63 +78,32 @@
 			});
 		};
 	}
-	function Scheduler()
-	{
-		var difficultTicket = new Ticket('A really difficult ticket');
-		var impossibleTicket = new Ticket('Impossible ticket');
-		var coolTicket = new Ticket('A cool ticket');
-		var bugFix = new Ticket('Bug fix on the main site');
-		var buildHomepage = new Ticket('Building homepage for new project');
-		var afternoon = new Date;
-		var morning = new Date;
-		afternoon.setHours(13);
-		morning.setHours(9);
-		this.visibleDays = ko.observableArray([
-			new Day(new Date(2013, 5, 26, 9)),
-			new Day(new Date)
-		]);
-		this.tickets = ko.observableArray([
-			difficultTicket, coolTicket, bugFix, buildHomepage, impossibleTicket
-		]);
-		this.users = ko.observableArray([
-			new User('Sam', [
-				new Task({
-					ticket: coolTicket,
-					date: morning
-				}),
-				new Task({
-					ticket: difficultTicket,
-					estimatedTime: 3,
-					date: afternoon
-				}),
-				new Task({
-					ticket: impossibleTicket,
-					estimatedTime: 4,
-					date: new Date(2013, 5, 26, 9)
-				})
-			]),
-			new User('Mike', [
-				new Task({
-					ticket: difficultTicket,
-					estimatedTime: 2,
-					date: morning
-				})]),
-			new User('Dave', [
-				new Task({
-					ticket: bugFix,
-					date: afternoon
-				})
-			]),
-			new User('Dan', [
-				new Task({
-					ticket: difficultTicket,
-					date: afternoon,
-					estimatedTime: 4
-				})
-			])
-		]);
+
+	var scheduler = {
+		visibleDays: ko.observableArray([]),
+		tickets: ko.observableArray([]),
+		users: ko.observableArray([])
 	}
-	ko.applyBindings(new Scheduler());
+
+	$.getJSON('data.json', function(data) {
+		scheduler.visibleDays(data.days.map(function(date) {
+			return new Day(new Date(date));
+		}));
+		scheduler.tickets(data.tickets.map(function(ticket) {
+			return new Ticket(ticket);
+		}));
+		scheduler.users(data.users.map(function(user) {
+			user.tasks = (user.tasks || []).map(function(task) {
+				task.ticket = ko.utils.arrayFirst(scheduler.tickets(), function(ticket) {
+					return ticket.id == task.project_uid;
+				});
+				return new Task(task);
+			});
+			return new User(user);
+		}));
+	});
+
+	ko.applyBindings(scheduler);
 	</script>
 </body>
 </html>
