@@ -8,3 +8,4 @@ Management tool to be used in conjunction with Logger.
 - Figure out total time for a day, alongside time for morning/afternoon
 - When dragging/sorting, add item in correct position of tasks array.
 - Cap task duration to 4 hours per afternoon/morning period
+- Figure out what's going to happen when tasks exceed their section.
