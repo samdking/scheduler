@@ -14,15 +14,20 @@
 	section { float: left; width: 220px; margin: 5px; padding: 10px; box-sizing: border-box; background: #EEE;}
 	ul { padding: 0; list-style: none;}
 	h1 { margin: 0 0 10px; text-align: center; font-size: 18px}
-	.day>strong { font-size: 14px; border-bottom: 1px solid #AAA; display: block; padding: 10px 10px 3px; margin: 0 -10px 10px; }
+	.users { float: left; margin: -5px; border-spacing: 5px;}
+	.users th { padding: 8px; background: #EEE;}
+	.users th.minimised { }
+	.users td { padding: 7px 10px; width: 200px; background: #EEE;}
+	.users .day { color: #FFF; background: #888;}
+	.day>strong { font-size: 14px; display: block; padding: 8px; }
 	.day>strong span { float: right; color: #777;}
-	.users { float: left; margin: -5px;}
+
 	.tasks { height: 200px; margin: 3px 0; border: 1px dashed #555;}
 	.task { cursor: pointer; box-sizing: border-box; background: #CCC; font-size: 12px;}
 	.task>div { padding: 8px;}
 	.task:nth-child(2n) { background: #AAA;}
 	.tickets { margin: -5px; font-size: 14px; background: #CCC; padding: 20px 15px 10px; margin-right: 10px;}
-	.ticket { cursor: pointer; box-sizing: border-box; margin: 1px 0; background: #AAA; color: #FFF; font-size: 12px; padding: 8px;}
+	.ticket { font-weight: bold; cursor: pointer; box-sizing: border-box; margin: 1px 0; background: #AAA; color: #FFF; font-size: 12px; padding: 8px;}
 	.ticket:nth-child(2n) { background: #888;}
 	.task.complete { background: lightgreen;}
 	.users-summary { position: fixed; left: 230px;}
@@ -41,14 +46,23 @@
 			</ul>
 			<button data-bind="click: newTicket">New</button>
 		</section>
-		<div class="users" data-bind="foreach: users">
-			<section>
-				<h1 data-bind="text: name"></h1>
-				<div class="days" data-bind="foreach: $root.visibleDays">
-					<div class="day" data-bind="css: date.getDate()">
-						<strong data-bind="html: date.toDateString() + ' <span>(' + $parent.totalEstimatedTime($data.date) + ')</span>'"></strong>
-						<!-- ko foreach: timePeriods -->
-						<ul class="tasks" data-bind="sortable: {}, css: $data.getHours() == 9? 'am' : 'pm', foreach: $parents[1].tasksByDay($data)">
+		<table class="users">
+			<thead>
+				<tr data-bind="foreach: users">
+					<th data-bind="click: toggleInactivity, css: active()? '' : 'minimised', text: name"></th>
+				</tr>
+			</thead>
+			<!-- ko foreach: $root.visibleDays -->
+			<tbody>
+				<tr>
+					<td class="day" data-bind="attr: { colspan: $root.users().length }">
+						<strong data-bind="html: date.toDateString()"></strong>
+					</td>
+				</tr>
+				<tr data-bind="foreach: $root.users">
+					<td>
+						<!-- ko foreach: $parent.timePeriods -->
+						<ul class="tasks" data-bind="sortable: {}, css: getHours() == 9? 'am' : 'pm', foreach: $parent.tasksByDay($data)">
 							<li class="task" data-bind="resizable: {}, doubleClick: fillTime, style: {height: size()}, css: 'task-' + id, css: getStatus().toLowerCase()">
 								<div>
 									<strong data-bind="text: ticket.summary + ' (' + estimatedTime() + 'hrs)'"></strong>
@@ -57,10 +71,11 @@
 							</li>
 						</ul>
 						<!-- /ko -->
-					</div>
-				</div>
-			</section>
-		</div>
+					</td>
+				</tr>
+			</tbody>
+			<!-- /ko -->
+		</table>
 	</div>
 	<script src="/scheduler/assets/js/classes.js"></script>
 	<script>
@@ -103,7 +118,7 @@
 				revert: 50, 
 				scroll: false,
 				receive: function(event, ui) {
-					var moveTo = context.$parents[1];
+					var moveTo = context.$parent;
 					var date = viewModel;
 					if (ui.item.hasClass('ticket')) {
 						var ticket = ko.dataFor(ui.item[0]);
@@ -115,7 +130,7 @@
 						});
 					} else {
 						var task = ko.dataFor(ui.item[0]);
-						var moveFrom = ko.contextFor(ui.sender[0]).$parents[1];
+						var moveFrom = ko.contextFor(ui.sender[0]).$parent;
 						task.date = date;
 						moveFrom.tasks.remove(task);
 						ui.item.remove();
@@ -155,7 +170,7 @@
 			}, valueAccessor()))
 		},
 		update: function(el, value, all, model, context) {
-			var maxHours = 4 - context.$parents[2].totalEstimatedTime(context.$parent) + model.estimatedTime()
+			var maxHours = 4 - context.$parents[1].totalEstimatedTime(context.$parent) + model.estimatedTime()
 			$(el).resizable('option', 'maxHeight', maxHours * 50);
 		}
 	};

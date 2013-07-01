@@ -11,7 +11,7 @@
 			return (self.estimatedTime() * 50) + 'px';
 		});
 		this.getStatus = function() {
-			return self.taskStatuses[self.status()];
+			return self.taskStatuses[self.status()] || '';
 		};
 		this.fillTime = function() {
 			this.estimatedTime(4);
@@ -32,6 +32,10 @@
 			return ko.utils.arrayFilter(this.tasks(), function(task) {
 				return date.getTime() == task.date.getTime();
 			});
+		};
+		this.active = ko.observable(true);
+		this.toggleInactivity = function() {
+			this.active(!this.active());
 		};
 		this.totalEstimatedTime = function(date) {
 			var total = 0;
