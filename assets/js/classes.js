@@ -55,7 +55,9 @@
 		};
 		var morning = new Date(date.getTime());
 		var afternoon = new Date(date.getTime());
+		var overtime = new Date(date.getTime());
 		morning.setHours(9);
 		afternoon.setHours(13);
-		this.timePeriods = [morning, afternoon];
+		overtime.setHours(18);
+		this.timePeriods = [morning, afternoon, overtime];
 	}

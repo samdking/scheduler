@@ -23,6 +23,7 @@
 	.day>strong span { float: right; color: #777;}
 
 	.tasks { height: 200px; margin: 3px 0; border: 1px dashed #555;}
+	.tasks.overtime { height: 30px; border-color: #C00;}
 	.task { cursor: pointer; box-sizing: border-box; background: #CCC; font-size: 12px;}
 	.task>div { padding: 8px;}
 	.task:nth-child(2n) { background: #AAA;}
@@ -62,8 +63,8 @@
 				<tr data-bind="foreach: $root.users">
 					<td>
 						<!-- ko foreach: $parent.timePeriods -->
-						<ul class="tasks" data-bind="sortable: {}, css: getHours() == 9? 'am' : 'pm', foreach: $parent.tasksByDay($data)">
-							<li class="task" data-bind="resizable: {}, doubleClick: fillTime, style: {height: size()}, css: 'task-' + id, css: getStatus().toLowerCase()">
+						<ul class="tasks" data-bind="sortable: {}, css: getHours() == 9? 'am' : (getHours() == 13? 'pm' : 'overtime'), foreach: $parent.tasksByDay($data)">
+							<li class="task" data-bind="resizable: {}, doubleClick: fillTime, style: { height: size }, css: 'task-' + id, css: getStatus().toLowerCase()">
 								<div>
 									<strong data-bind="text: ticket.summary + ' (' + estimatedTime() + 'hrs)'"></strong>
 									<div data-bind="text: getStatus()"></div>
