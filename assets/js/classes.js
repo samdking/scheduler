@@ -8,7 +8,7 @@
 		this.date = new Date(data.date) || new Date();
 		this.status = ko.observable(data.task_status_uid);
 		this.size = ko.computed(function() {
-			return (self.estimatedTime() * 50) + 'px';
+			return (self.estimatedTime() * 40) + 'px';
 		});
 		this.getStatus = function() {
 			return self.taskStatuses[self.status()] || '';

@@ -22,7 +22,7 @@
 	.day>strong { font-size: 14px; display: block; padding: 8px; }
 	.day>strong span { float: right; color: #777;}
 
-	.tasks { height: 200px; margin: 3px 0; border: 1px dashed #555;}
+	.tasks { height: 160px; margin: 3px 0; border: 1px dashed #555;}
 	.tasks.overtime { height: 30px; border-color: #C00;}
 	.task { cursor: pointer; box-sizing: border-box; background: #CCC; font-size: 12px;}
 	.task>div { padding: 8px;}
@@ -159,20 +159,23 @@
 	};
 
 	ko.bindingHandlers.resizable = {
-		init: function(element, valueAccessor, allBindingsAccessor, viewModel) {
+		init: function(element, valueAccessor, allBindingsAccessor, viewModel, context) {
+			var containerHeight = $(element).parent().height();
+			var hours = 4;
 			$(element).resizable($.extend({
-				maxHeight: 200,
 				handles: 's',
-				grid: [0, 25],
-				resize: function() {
+				grid: [0, containerHeight / (hours * 4)],
+				stop: function() {
 					var height = $(this).height();
-					viewModel.estimatedTime(height / 50);
+					viewModel.estimatedTime(height / (containerHeight / hours));
 				}
 			}, valueAccessor()))
 		},
 		update: function(el, value, all, model, context) {
-			var maxHours = 4 - context.$parents[1].totalEstimatedTime(context.$parent) + model.estimatedTime()
-			$(el).resizable('option', 'maxHeight', maxHours * 50);
+			var hours = 4;
+			var containerHeight = $(el).parent().height();
+			var maxHours = hours - context.$parents[1].totalEstimatedTime(context.$parent) + model.estimatedTime();
+			$(el).resizable('option', 'maxHeight', maxHours * (containerHeight / hours));
 		}
 	};
 
