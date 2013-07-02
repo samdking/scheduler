@@ -7,6 +7,7 @@
 		this.estimatedTime = ko.observable(data.estimatedTime || 1);
 		this.date = new Date(data.date) || new Date();
 		this.status = ko.observable(data.task_status_uid);
+		this.priority = ko.observable(data.priority || 0);
 		this.size = ko.computed(function() {
 			return (self.estimatedTime() * 40) + 'px';
 		});
