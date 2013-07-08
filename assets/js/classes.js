@@ -2,12 +2,14 @@
 	function Task(data)
 	{
 		var self = this;
-		this.id = data.uid || null;
+		this.id = data.uid || 'NEW';
 		this.ticket = data.ticket || {};
 		this.estimatedTime = ko.observable(data.estimatedTime || 1);
+		this.billedTime = ko.observable(data.billedTime || 0);
 		this.date = new Date(data.date) || new Date();
 		this.status = ko.observable(data.task_status_uid);
-		this.priority = ko.observable(data.priority || 0);
+		this.priority = ko.observable(isNaN(data.priority) && 50 || data.priority);
+		this.overflow = ko.observable(false);
 		this.size = ko.computed(function() {
 			return (self.estimatedTime() * 40) + 'px';
 		});
@@ -17,6 +19,10 @@
 		this.fillTime = function() {
 			this.estimatedTime(4);
 		};
+
+		this.label = ko.computed(function() {
+			return '#' + this.id + ' ' + this.ticket.summary + ' (' + this.estimatedTime() + 'hrs) [' + this.priority() + ']';
+		}, this);
 	}
 
 	function Ticket(data)
@@ -29,21 +35,51 @@
 	{
 		this.name = data.name;
 		this.tasks = ko.observableArray(data.tasks);
-		this.tasksByDay = function(date) {
+		this.active = ko.observable(true);
+		this.tasksByDay = function(day) {
+			var sum = 0;
+			var tasks = this.tasks();
+			tasks = ko.utils.arrayFilter(tasks, function(task) {
+				if(day.isSameDay(task.date)) {
+					sum += task.estimatedTime();
+					task.overflow(sum > 8);
+					return sum <= 8;
+				}
+			});
+			tasks.sort(function (l, r) {
+				if (l.priority() === r.priority())
+					return l.getStatus() == 'Pending'? 1 : -1;
+				else
+					return l.priority() > r.priority() ? -1 : 1;
+			});
+			return tasks;
+		};
+		this.overflowTasks = function(day) {
 			return ko.utils.arrayFilter(this.tasks(), function(task) {
-				return date.getTime() == task.date.getTime();
+				return day.isSameDay(task.date) && task.overflow();
 			});
 		};
-		this.active = ko.observable(true);
 		this.toggleInactivity = function() {
 			this.active(!this.active());
 		};
-		this.totalEstimatedTime = function(date) {
+		this.totalEstimatedTime = function(day) {
 			var total = 0;
-			ko.utils.arrayForEach(this.tasksByDay(date), function(task) {
+			var tasks = ko.utils.arrayFilter(this.tasks(), function(task) {
+				return day.isSameDay(task.date);
+			});
+			ko.utils.arrayForEach(tasks, function(task) {
 				total += task.estimatedTime() * 1;
 			});
 			return total;
+		};
+		this.fitTask = function(task, day) {
+			task.overflow(false);
+			var overflow = this.totalEstimatedTime(day) - 8;
+			task.estimatedTime(task.estimatedTime() - overflow);
+		};
+		/* Test */
+		this.addTask = function() {
+			this.tasks.push(new Task({priority: 0, date: '2013-06-28', task_status_uid: 2, ticket: new Ticket({summary: 'Testing'})}));
 		};
 	}
 
@@ -54,11 +90,4 @@
 		this.isSameDay = function(date) {
 			return date.toISOString().substr(0, 10) == self.date.toISOString().substr(0, 10);
 		};
-		var morning = new Date(date.getTime());
-		var afternoon = new Date(date.getTime());
-		var overtime = new Date(date.getTime());
-		morning.setHours(9);
-		afternoon.setHours(13);
-		overtime.setHours(18);
-		this.timePeriods = [morning, afternoon, overtime];
 	}
