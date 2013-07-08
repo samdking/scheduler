@@ -68,7 +68,7 @@
 				return day.isSameDay(task.date);
 			});
 			ko.utils.arrayForEach(tasks, function(task) {
-				total += task.estimatedTime() * 1;
+				total += task.estimatedTime();
 			});
 			return total;
 		};
@@ -79,7 +79,7 @@
 		};
 		/* Test */
 		this.addTask = function() {
-			this.tasks.push(new Task({priority: 0, date: '2013-06-28', task_status_uid: 2, ticket: new Ticket({summary: 'Testing'})}));
+			this.tasks.push(new Task({priority: 0, date: '2013-06-29', task_status_uid: 2, ticket: new Ticket({summary: 'Testing'})}));
 		};
 	}
 

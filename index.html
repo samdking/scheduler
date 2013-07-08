@@ -18,25 +18,27 @@
 	.users th.minimised { }
 	.users td { padding: 7px 10px; width: 200px; background: #EEE;}
 	.users .day { color: #FFF; background: #888;}
-	.day>strong { font-size: 14px; display: block; padding: 8px; }
+	.day>strong { font-size: 14px; display: block; padding: 5px 0; }
 	.day>strong span { float: right; color: #777;}
 
 	.tasks { height: 320px; margin: 3px 0; border: 1px dashed #555;}
 	.tasks.overflow { overflow: hidden; height: 120px; border-color: #C00;}
 	.task { box-sizing: border-box; background: #CCC; font-size: 12px;}
+	.task strong { font-weight: normal; }
 	.overflow .task { width: 30px; float: left; overflow: hidden; height: 120px;}
 	.task.pending { cursor: pointer;}
 	.task>div { padding: 8px;}
 	.tickets { float: left; width: 230px; box-sizing: border-box; font-size: 14px; background: #CCC; padding: 20px 15px 10px; margin-right: 10px;}
 	.ticket { font-weight: bold; cursor: pointer; box-sizing: border-box; margin: 1px 0; background: #AAA; color: #FFF; font-size: 12px; padding: 8px;}
-	.ticket:nth-child(2n) { background: #888;}
+	.ticket:nth-child(2n) { background: #888; }
 	.task.complete { background: lightgreen;}
 	.task.manager-attention { background: LightCoral;}
 	.task.active { background: orange;}
 	.users-summary { position: fixed; left: 230px;}
 	.ui-sortable-helper { background: #999; color: #FFF;}
+	.ui-sortable-placeholder { background: #FFF380;}
 	.ui-resizable { position: relative;}
-	.ui-resizable-handle { position: absolute;font-size: 0.1px;z-index: 99999; display: block;}
+	.task .ui-resizable-handle { padding: 0; position: absolute;font-size: 0.1px;z-index: 99999; display: block;}
 	.ui-resizable-disabled .ui-resizable-handle, .ui-resizable-autohide .ui-resizable-handle { display: none; }
 	.ui-resizable-s { cursor: s-resize; height: 7px; width: 100%; bottom: -5px; left: 0px; }
   .ui-resizable-helper { border: 2px dotted #00F; }
@@ -125,6 +127,8 @@
 	ko.bindingHandlers.sortable = {
 		init: function(element, valueAccessor, allBindingsAccessor, viewModel, context) {
 			$(element).sortable($.extend({
+				placeholder: 'ui-sortable-placeholder',
+				forcePlaceholderSize: true,
 				connectWith: '.' + element.className, 
 				revert: 50, 
 				scroll: false,
@@ -132,43 +136,45 @@
 					var day = context.$parent;
 					var item = ko.dataFor(ui.item[0]);
 					var totalTime = viewModel.totalEstimatedTime(day);
-					var overflow;
-					var newPriority;
+					var task;
+					if (totalTime === 8) {
+						try {
+							ui.sender.sortable('cancel');
+						} catch (e) {
+							// nothing
+						} finally {
+							return;
+						}
+					}
 					if (ui.item.hasClass('ticket')) {
-						var ticket = item;
 						task = new Task({
-							ticket: ticket,
+							ticket: item,
 							uid: 'NEW',
 							date: day.date,
 							task_status_uid: 2,
-							priority: ui.item.getPriority() || 50
+							priority: $(this).find('.ticket').getPriority() || 50
 						});
 					} else {
 						task = item;
-						this.date = day.date;
-						overflow = totalTime + task.estimatedTime() - 8;
+						task.date = day.date;
+						var overflow = totalTime + task.estimatedTime() - 8;
 						if (overflow > 0)
 							task.estimatedTime(task.estimatedTime() - overflow);
 						ui.item.remove();
 					}
-					if (totalTime === 8) {
-						ui.sender.sortable('cancel');
-					} else {
-						viewModel.tasks.push(task);
-					}
+					viewModel.tasks.push(task);
 				},
 				remove: function(event, ui) {
 					var context = ko.contextFor(ui.item[0]);
 					context.$parent.tasks.remove(context.$data);
 				},
 				update: function(event, ui) {
-					if ($(this).find('.ticket').length) {
-						$(this).find('.ticket').remove();
-					} else {
-						if (!ui.sender) {
-							if (newPriority = ui.item.getPriority())
-								ko.dataFor(ui.item[0]).priority(newPriority);
-						}
+					$(this).sortable('refresh');
+					if (ui.item.hasClass('ticket'))
+						ui.item.remove();
+					if (!ui.sender) {
+						if (newPriority = ui.item.getPriority())
+							ko.dataFor(ui.item[0]).priority(newPriority);
 					}
 				}
 			}, valueAccessor()));
