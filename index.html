@@ -10,7 +10,7 @@
 	<script src="http://code.jquery.com/jquery-1.9.1.js"></script>
 	<script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
 	<style type="text/css">
-	body { font-family: arial; margin: 0;}
+	body { font-family: arial; margin: 0; }
 	ul { padding: 0; list-style: none;}
 	h1 { margin: 0 0 10px; text-align: center; font-size: 18px}
 	.users { float: left; margin: -5px; border-spacing: 5px;}
@@ -21,17 +21,19 @@
 	.day>strong { font-size: 14px; display: block; padding: 5px 0; }
 	.day>strong span { float: right; color: #777;}
 
-	.tasks { height: 320px; margin: 3px 0; border: 1px dashed #555;}
+	.tasks { height: 360px; margin: 3px 0; border: 1px dashed #555;}
 	.tasks.overflow { overflow: hidden; height: 120px; border-color: #C00;}
-	.task { box-sizing: border-box; background: #CCC; font-size: 12px;}
+	.task { box-sizing: border-box; background: #CCC; font-size: 12px; overflow: hidden; border: 1px solid #EEE; border-width: 1px 0; cursor: pointer}
+	.task:first-child { border-top: 0;}
+	.task:last-child { border-bottom: 0;}
 	.task strong { font-weight: normal; }
 	.overflow .task { width: 30px; float: left; overflow: hidden; height: 120px;}
-	.task.pending { cursor: pointer;}
-	.task>div { padding: 8px;}
-	.tickets { float: left; width: 230px; box-sizing: border-box; font-size: 14px; background: #CCC; padding: 20px 15px 10px; margin-right: 10px;}
+	.task>div { padding: 4px 8px;}
+	.tickets { float: left; width: 280px; box-sizing: border-box; font-size: 14px; background: #CCC; padding: 20px 15px 10px; margin-right: 10px;}
 	.ticket { font-weight: bold; cursor: pointer; box-sizing: border-box; margin: 1px 0; background: #AAA; color: #FFF; font-size: 12px; padding: 8px;}
 	.ticket:nth-child(2n) { background: #888; }
-	.task.complete { background: lightgreen;}
+	.task.complete { background: limegreen;}
+	.task.carried-over { background: lightgreen;}
 	.task.manager-attention { background: LightCoral;}
 	.task.active { background: orange;}
 	.users-summary { position: fixed; left: 230px;}
@@ -48,8 +50,8 @@
 	<div class="container" data-bind="style: { width: (users().length+1)*260 + 'px' }">
 		<section class="tickets" data-bind="visible: tickets().length">
 			<h1>Tickets</h1>
-			<ul data-bind="foreach: tickets">
-				<li class="ticket" data-bind="draggable: { connectToSortable: '.tasks', snap: '.tasks' }, css: 'ticket-' + id, text: summary"></li>
+			<ul data-bind="foreach: activeTickets">
+				<li class="ticket" data-bind="draggable: { connectToSortable: '.tasks', snap: '.tasks' }, css: 'ticket-' + id, text: label"></li>
 			</ul>
 			<button data-bind="click: newTicket">New</button>
 		</section>
@@ -69,18 +71,16 @@
 				<tr data-bind="foreach: $root.users">
 					<td>
 						<ul class="tasks" data-bind="sortable: { items: 'li.pending' }, foreach: tasksByDay($parent)">
-							<li class="task" data-bind="resizable: {}, doubleClick: function() { $parent.fitTask($data, $parents[1]); }, style: { height: size }, css: 'task-' + id, css: getStatus().toLowerCase().replace(' ', '-')">
+							<li class="task" data-bind="resizable: {}, doubleClick: function() { $parent.fitTask($data, $parents[1]); }, style: { height: size }, css: 'task-' + id, css: getStatus().name.toLowerCase().replace(' ', '-')">
 								<div>
 									<strong data-bind="text: label"></strong>
-									<div data-bind="text: getStatus()"></div>
 								</div>
 							</li>
 						</ul>
-						<ul class="tasks overflow" data-bind="sortable: { connectWith: '.tasks'}, foreach: overflowTasks($parent)">
-							<li class="task" data-bind="css: 'task-' + id, css: getStatus().toLowerCase().replace(' ', '-')">
+						<ul class="tasks overflow" data-bind="sortable: { items: 'li.pending', connectWith: '.tasks'}, foreach: overflowTasks($parent)">
+							<li class="task" data-bind="css: 'task-' + id, css: getStatus().name.toLowerCase().replace(' ', '-')">
 								<div>
 									<strong data-bind="text: label"></strong>
-									<div data-bind="text: getStatus()"></div>
 								</div>
 							</li>
 						</ul>
@@ -103,7 +103,13 @@
 		}
 	}
 
-	$.getJSON('data.json', function(data) {
+	scheduler.activeTickets = ko.computed(function() {
+		return ko.utils.arrayFilter(scheduler.tickets(), function(ticket) {
+			return ticket.project_status_uid() == 1;
+		});
+	});
+
+	$.getJSON('data.json.php', function(data) {
 		scheduler.visibleDays((data.days || []).map(function(date) {
 			return new Day(new Date(date));
 		}));
@@ -137,7 +143,8 @@
 					var item = ko.dataFor(ui.item[0]);
 					var totalTime = viewModel.totalEstimatedTime(day);
 					var task;
-					if (totalTime === 8) {
+					var overflow;
+					if (totalTime >= 8) {
 						try {
 							ui.sender.sortable('cancel');
 						} catch (e) {
@@ -150,18 +157,20 @@
 						task = new Task({
 							ticket: item,
 							uid: 'NEW',
-							date: day.date,
 							task_status_uid: 2,
-							priority: $(this).find('.ticket').getPriority() || 50
+							priority: $(this).find('.ticket').getPriority() || 50,
+							estimatedTime: 1
 						});
 					} else {
 						task = item;
-						task.date = day.date;
-						var overflow = totalTime + task.estimatedTime() - 8;
-						if (overflow > 0)
-							task.estimatedTime(task.estimatedTime() - overflow);
 						ui.item.remove();
 					}
+
+					task.date = day.date;
+					overflow = totalTime + task.estimatedTime() - 8;
+					if (overflow > 0)
+						task.estimatedTime(task.estimatedTime() - overflow);
+					
 					viewModel.tasks.push(task);
 				},
 				remove: function(event, ui) {
@@ -212,19 +221,22 @@
 			$(element)
 				.resizable($.extend({
 					handles: 's',
-					grid: [0, containerHeight / (hours * 4)],
+					grid: [0, 10],
 					stop: function() {
-						var height = $(this).height();
-						viewModel.estimatedTime(height / (containerHeight / hours));
+						var height = $(this).outerHeight();
+						console.log(height);
+						console.log($(this).height());
+						console.log(height / 40);
+//						viewModel.estimatedTime(height / (containerHeight / hours));
 					}
 				}, valueAccessor()));
 		},
 		update: function(el, value, all, model, context) {
-			if (model.getStatus() == 'Pending') {
+			if (model.getStatus().name == 'Pending') {
 				var hours = 8;
 				var containerHeight = $(el).parent().height();
 				var maxHours = hours - context.$parent.totalEstimatedTime(context.$parents[1]) + model.estimatedTime();
-				$(el).resizable('option', 'maxHeight', maxHours * (containerHeight / hours));
+	//			$(el).resizable('option', 'maxHeight', maxHours * (containerHeight / hours));
 			} else {
 				$(el).resizable('disable');
 			}

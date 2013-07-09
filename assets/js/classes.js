@@ -4,24 +4,26 @@
 		var self = this;
 		this.id = data.uid || 'NEW';
 		this.ticket = data.ticket || {};
-		this.estimatedTime = ko.observable(data.estimatedTime || 1);
+		this.estimatedTime = ko.observable(data.estimatedTime || 0);
 		this.billedTime = ko.observable(data.billedTime || 0);
 		this.date = new Date(data.date) || new Date();
 		this.status = ko.observable(data.task_status_uid);
 		this.priority = ko.observable(isNaN(data.priority) && 50 || data.priority);
 		this.overflow = ko.observable(false);
-		this.size = ko.computed(function() {
-			return (self.estimatedTime() * 40) + 'px';
+		this.timeTaken = ko.computed(function() {
+			return Math.max(self.estimatedTime(), self.billedTime());
 		});
 		this.getStatus = function() {
-			return self.taskStatuses[self.status()] || '';
+			return self.taskStatuses[self.status()] || {};
 		};
-		this.fillTime = function() {
-			this.estimatedTime(4);
-		};
-
+		this.size = ko.computed(function() {
+			if (self.getStatus().completed)
+				return self.billedTime();
+			else
+				return (self.timeTaken() * 40) + 'px';
+		});
 		this.label = ko.computed(function() {
-			return '#' + this.id + ' ' + this.ticket.summary + ' (' + this.estimatedTime() + 'hrs) [' + this.priority() + ']';
+			return '#' + this.id + ' ' + this.ticket.name + ' (' + this.timeTaken() + 'hrs)';// + '[' + this.priority() + ']';
 		}, this);
 	}
 
@@ -29,6 +31,12 @@
 	{
 		this.id = data.uid || null;
 		this.summary = data.summary;
+		this.name = data.name || '{' + this.id + '}';
+		this.label = ko.computed(function() {
+			var parts = [this.name, this.summary].filter(function(n) { return n; });
+			return parts.join(' - ');
+		}, this);
+		this.project_status_uid = ko.observable(data.project_status_uid);
 	}
 
 	function User(data)
@@ -39,11 +47,13 @@
 		this.tasksByDay = function(day) {
 			var sum = 0;
 			var tasks = this.tasks();
+			var overflow = false;
 			tasks = ko.utils.arrayFilter(tasks, function(task) {
 				if(day.isSameDay(task.date)) {
-					sum += task.estimatedTime();
-					task.overflow(sum > 8);
-					return sum <= 8;
+					sum += task.timeTaken();
+					overflow = sum > 8 && task.getStatus() == 'Pending';
+					task.overflow(overflow);
+					return !overflow;
 				}
 			});
 			tasks.sort(function (l, r) {
@@ -68,7 +78,7 @@
 				return day.isSameDay(task.date);
 			});
 			ko.utils.arrayForEach(tasks, function(task) {
-				total += task.estimatedTime();
+				total += task.timeTaken();
 			});
 			return total;
 		};
