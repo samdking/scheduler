@@ -9,47 +9,14 @@
 	<script src="/scheduler/assets/js/knockout.js"></script>
 	<script src="http://code.jquery.com/jquery-1.9.1.js"></script>
 	<script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
-	<style type="text/css">
-	body { font-family: arial; margin: 0;}
-	ul { padding: 0; list-style: none;}
-	h1 { margin: 0 0 10px; text-align: center; font-size: 18px}
-	.users { float: left; margin: -5px; border-spacing: 5px;}
-	.users th { padding: 8px; background: #EEE;}
-	.users th.minimised { }
-	.users td { padding: 7px 10px; width: 200px; background: #EEE;}
-	.users .day { color: #FFF; background: #888;}
-	.day>strong { font-size: 14px; display: block; padding: 5px 0; }
-	.day>strong span { float: right; color: #777;}
-
-	.tasks { height: 320px; margin: 3px 0; border: 1px dashed #555;}
-	.tasks.overflow { overflow: hidden; height: 120px; border-color: #C00;}
-	.task { box-sizing: border-box; background: #CCC; font-size: 12px;}
-	.task strong { font-weight: normal; }
-	.overflow .task { width: 30px; float: left; overflow: hidden; height: 120px;}
-	.task.pending { cursor: pointer;}
-	.task>div { padding: 8px;}
-	.tickets { float: left; width: 230px; box-sizing: border-box; font-size: 14px; background: #CCC; padding: 20px 15px 10px; margin-right: 10px;}
-	.ticket { font-weight: bold; cursor: pointer; box-sizing: border-box; margin: 1px 0; background: #AAA; color: #FFF; font-size: 12px; padding: 8px;}
-	.ticket:nth-child(2n) { background: #888; }
-	.task.complete { background: lightgreen;}
-	.task.manager-attention { background: LightCoral;}
-	.task.active { background: orange;}
-	.users-summary { position: fixed; left: 230px;}
-	.ui-sortable-helper { background: #999; color: #FFF;}
-	.ui-sortable-placeholder { background: #FFF380;}
-	.ui-resizable { position: relative;}
-	.task .ui-resizable-handle { padding: 0; position: absolute;font-size: 0.1px;z-index: 99999; display: block;}
-	.ui-resizable-disabled .ui-resizable-handle, .ui-resizable-autohide .ui-resizable-handle { display: none; }
-	.ui-resizable-s { cursor: s-resize; height: 7px; width: 100%; bottom: -5px; left: 0px; }
-  .ui-resizable-helper { border: 2px dotted #00F; }
-	</style>
+	<link rel="stylesheet" href="/scheduler/assets/css/stylesheet.css">
 </head>
 <body>
 	<div class="container" data-bind="style: { width: (users().length+1)*260 + 'px' }">
-		<section class="tickets" data-bind="visible: tickets().length">
+		<section class="tickets">
 			<h1>Tickets</h1>
-			<ul data-bind="foreach: tickets">
-				<li class="ticket" data-bind="draggable: { connectToSortable: '.tasks', snap: '.tasks' }, css: 'ticket-' + id, text: summary"></li>
+			<ul data-bind="foreach: activeTickets">
+				<li class="ticket" data-bind="draggable: { connectToSortable: '.tasks', snap: '.tasks' }, css: 'ticket-' + id, text: label"></li>
 			</ul>
 			<button data-bind="click: newTicket">New</button>
 		</section>
@@ -68,19 +35,18 @@
 				</tr>
 				<tr data-bind="foreach: $root.users">
 					<td>
-						<ul class="tasks" data-bind="sortable: { items: 'li.pending' }, foreach: tasksByDay($parent)">
-							<li class="task" data-bind="resizable: {}, doubleClick: function() { $parent.fitTask($data, $parents[1]); }, style: { height: size }, css: 'task-' + id, css: getStatus().toLowerCase().replace(' ', '-')">
-								<div>
+						<div class="eight-hour-marker"></div>
+						<ul class="tasks" data-bind="sortable: { items: 'li.pending' }, foreach: validTasksByDay($parent)">
+							<li class="task" data-bind="resizable: {}, doubleClick: function() { $parent.fitTask($data, $parents[1]); }, style: { height: size }, css: ['task-' + id, status().slug].join(' ')">
+								<div class="info">
 									<strong data-bind="text: label"></strong>
-									<div data-bind="text: getStatus()"></div>
 								</div>
 							</li>
 						</ul>
-						<ul class="tasks overflow" data-bind="sortable: { connectWith: '.tasks'}, foreach: overflowTasks($parent)">
-							<li class="task" data-bind="css: 'task-' + id, css: getStatus().toLowerCase().replace(' ', '-')">
-								<div>
+						<ul class="tasks overflow" data-bind="sortable: { items: 'li.pending', connectWith: '.tasks'}, foreach: overflowTasksByDay($parent)">
+							<li class="task" data-bind="css: 'task-' + id, css: status().slug">
+								<div class="info">
 									<strong data-bind="text: label"></strong>
-									<div data-bind="text: getStatus()"></div>
 								</div>
 							</li>
 						</ul>
@@ -89,158 +55,15 @@
 			</tbody>
 			<!-- /ko -->
 		</table>
+		<div class="popup" data-bind="with: selectedTask">
+			<h2 data-bind="css: status().slug, text: ticket.label()"></h2>
+			<p data-bind="html: '<strong>Actual time:</strong> ' + billedTime() + 'hrs (estimated: ' + estimatedTime() + 'hrs)'"></p>
+			<p data-bind="text: description"></p>
+			<label for="task-status-selector">Ticket status:</label>
+			<select id="task-status-selector" data-bind="options: Ticket.prototype.projectStatuses, optionsText: 'name', value: $data.ticket.status"></select>
+		</div>
 	</div>
 	<script src="/scheduler/assets/js/classes.js"></script>
-	<script>
-	var scheduler = {
-		visibleDays: ko.observableArray([]),
-		tickets: ko.observableArray([]),
-		users: ko.observableArray([]),
-		newTicket: function() {
-			this.tickets.push(new Ticket({
-				summary: 'New ticket - this would be populated by a lightbox prompt'
-			}));
-		}
-	}
-
-	$.getJSON('data.json', function(data) {
-		scheduler.visibleDays((data.days || []).map(function(date) {
-			return new Day(new Date(date));
-		}));
-		scheduler.tickets((data.tickets || []).map(function(ticket) {
-			return new Ticket(ticket);
-		}));
-		Task.prototype.taskStatuses = data.taskStatuses;
-		scheduler.users((data.users || []).map(function(user) {
-			user.tasks = (user.tasks || []).map(function(task) {
-				task.ticket = ko.utils.arrayFirst(scheduler.tickets(), function(ticket) {
-					return ticket.id == task.project_uid;
-				});
-				return new Task(task);
-			});
-			return new User(user);
-		}));
-	}).fail(function() {
-		alert('Could not find a data.json file, or there was a problem with the JSON file.');
-	});
-
-	ko.bindingHandlers.sortable = {
-		init: function(element, valueAccessor, allBindingsAccessor, viewModel, context) {
-			$(element).sortable($.extend({
-				placeholder: 'ui-sortable-placeholder',
-				forcePlaceholderSize: true,
-				connectWith: '.' + element.className, 
-				revert: 50, 
-				scroll: false,
-				receive: function(event, ui) {
-					var day = context.$parent;
-					var item = ko.dataFor(ui.item[0]);
-					var totalTime = viewModel.totalEstimatedTime(day);
-					var task;
-					if (totalTime === 8) {
-						try {
-							ui.sender.sortable('cancel');
-						} catch (e) {
-							// nothing
-						} finally {
-							return;
-						}
-					}
-					if (ui.item.hasClass('ticket')) {
-						task = new Task({
-							ticket: item,
-							uid: 'NEW',
-							date: day.date,
-							task_status_uid: 2,
-							priority: $(this).find('.ticket').getPriority() || 50
-						});
-					} else {
-						task = item;
-						task.date = day.date;
-						var overflow = totalTime + task.estimatedTime() - 8;
-						if (overflow > 0)
-							task.estimatedTime(task.estimatedTime() - overflow);
-						ui.item.remove();
-					}
-					viewModel.tasks.push(task);
-				},
-				remove: function(event, ui) {
-					var context = ko.contextFor(ui.item[0]);
-					context.$parent.tasks.remove(context.$data);
-				},
-				update: function(event, ui) {
-					$(this).sortable('refresh');
-					if (ui.item.hasClass('ticket'))
-						ui.item.remove();
-					if (!ui.sender) {
-						if (newPriority = ui.item.getPriority())
-							ko.dataFor(ui.item[0]).priority(newPriority);
-					}
-				}
-			}, valueAccessor()));
-		}
-	}
-
-	$.fn.getPriority = function() {
-		var newPriority;
-		if (this.prev('.task').length)
-			newPriority = ko.dataFor(this.prev('.task')[0]).priority()-1;
-		else if (this.next('.task').length)
-			newPriority = ko.dataFor(this.next('.task')[0]).priority()+1;
-		return newPriority;
-	};
-
-	ko.bindingHandlers.draggable = {
-		init: function(element, valueAccessor) {
-			$(element).draggable($.extend({
-				helper: "clone",
-				revert: "invalid",
-				snapMode: 'inner',
-				snapTolerance: 20,
-				revertDuration: 200,
-				start: function(event, ui) {
-					ui.helper.width($(this).width());
-				}
-			}, valueAccessor()));
-		}
-	};
-
-	ko.bindingHandlers.resizable = {
-		init: function(element, valueAccessor, allBindingsAccessor, viewModel, context) {
-			var containerHeight = $(element).parent().height();
-			var hours = 8;
-			$(element)
-				.resizable($.extend({
-					handles: 's',
-					grid: [0, containerHeight / (hours * 4)],
-					stop: function() {
-						var height = $(this).height();
-						viewModel.estimatedTime(height / (containerHeight / hours));
-					}
-				}, valueAccessor()));
-		},
-		update: function(el, value, all, model, context) {
-			if (model.getStatus() == 'Pending') {
-				var hours = 8;
-				var containerHeight = $(el).parent().height();
-				var maxHours = hours - context.$parent.totalEstimatedTime(context.$parents[1]) + model.estimatedTime();
-				$(el).resizable('option', 'maxHeight', maxHours * (containerHeight / hours));
-			} else {
-				$(el).resizable('disable');
-			}
-		}
-	};
-
-	ko.bindingHandlers.doubleClick = {
-		init: function(element, valueAccessor, allBindingsAccessor, viewModel) {
-			$(element).dblclick(function() {
-				valueAccessor().call(viewModel);
-			});
-		}
-	};
-
-	ko.applyBindings(scheduler);
-
-	</script>
+	<script src="/scheduler/assets/js/main.js"></script>
 </body>
 </html>
