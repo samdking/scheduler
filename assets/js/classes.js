@@ -56,37 +56,21 @@
 		};
 
 		this.tasksByDay = function(day) {
-			return ko.utils.arrayFilter(this.tasks(), function(task) {
+			var sum = 0;
+			var tasks = this.tasks();
+			var overflow = false;
+			tasks = ko.utils.arrayFilter(tasks, function(task) {
 				return day.isSameDay(task.date);
 			});
-		};
-		
-		this.validTasksByDay = function(day) {
-			var sum = 0;
-			var tasks = this.tasksByDay(day);
-			var overflow = false;
 			tasks.sort(self.taskSorter);
 			return ko.utils.arrayFilter(tasks, function(task) {
 				sum += task.timeTaken();
 				overflow = sum > 8 && task.status().name == 'Pending';
 				task.overflow(overflow);
-				return !overflow;
+				return true;
 			});
 		};
 
-		this.overflowTasksByDay = function(day) {
-			var sum = 0;
-			var tasks = this.tasksByDay(day);
-			var overflow = false;
-			tasks.sort(self.taskSorter);
-			return ko.utils.arrayFilter(tasks, function(task) {
-				sum += task.timeTaken();
-				overflow = sum > 8 && task.status().name == 'Pending';
-				task.overflow(!overflow);
-				return overflow;
-			});
-		};
-		
 		this.toggleInactivity = function() {
 			this.active(!this.active());
 		};
@@ -110,7 +94,7 @@
 
 		/* Test */
 		this.addTask = function() {
-			this.tasks.push(new Task({priority: -1000000, date: '2013-07-02', billedTime: 2.5, task_status_uid: 2, ticket: new Ticket({name: 'TESTING', summary: 'Testing'})}));
+			this.tasks.push(new Task({priority: -1000000, date: '2013-07-02', billedTime: 2.5, status: Task.prototype.taskStatuses[1], ticket: new Ticket({name: 'TESTING', summary: 'Testing'})}));
 		};
 	}
 
