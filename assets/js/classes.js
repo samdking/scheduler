@@ -42,8 +42,12 @@
 	{
 		var self = this;
 		this.name = data.name;
+		this.lastInitial = data.lastInitial;
 		this.tasks = ko.observableArray(data.tasks);
 		this.active = ko.observable(true);
+		this.label = ko.computed(function() {
+			return self.active()? self.name : self.name.substr(0, 1) + self.lastInitial;
+		});
 
 		this.taskSorter = function(l, r) {
 			if (l.status().completed && !r.status().completed)

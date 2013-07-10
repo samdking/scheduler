@@ -22,7 +22,7 @@
 		<table class="users">
 			<thead>
 				<tr data-bind="foreach: users">
-					<th data-bind="click: addTask, css: active()? '' : 'minimised', text: name"></th>
+					<th data-bind="click: toggleInactivity, css: {minimised: !active()}, text: label"></th>
 				</tr>
 			</thead>
 			<!-- ko foreach: $root.visibleDays -->
@@ -33,7 +33,7 @@
 					</td>
 				</tr>
 				<tr data-bind="foreach: $root.users">
-					<td>
+					<td data-bind="css: {minimised: !active()}">
 						<div class="eight-hour-marker"></div>
 						<ul class="tasks" data-bind="sortable: { items: 'li.pending' }, foreach: tasksByDay($parent)">
 							<li class="task" data-bind="resizable: {}, doubleClick: function() { $parent.fitTask($data, $parents[1]); }, style: { height: size }, css: ['task-' + id, status().slug, (overflow()? 'overflow' : '')].join(' ')">

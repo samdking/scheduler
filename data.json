@@ -616,7 +616,7 @@
         "uid" : "16765"
       }
     ],
-  "users" : [ { "name" : "Sam",
+  "users" : [ { "name" : "Sam", "lastInitial" : "K",
         "tasks" : [ { "billedTime" : 0,
               "date" : "2013-07-02",
               "description" : "(Carried over from task on 2013-05-28)",
@@ -835,7 +835,7 @@
             }
           ]
       },
-      { "name" : "Dan",
+      { "name" : "Dan", "lastInitial" : "B",
         "tasks" : [ { "billedTime" : 0,
               "date" : "2013-07-03",
               "description" : "",
@@ -926,7 +926,7 @@
             }
           ]
       },
-      { "name" : "Joao",
+      { "name" : "Joao", "lastInitial" : "A",
         "tasks" : [ { "billedTime" : 0,
               "date" : "2013-07-03",
               "description" : "",
@@ -1113,7 +1113,7 @@
             }
           ]
       },
-      { "name" : "David",
+      { "name" : "David", "lastInitial" : "G",
         "tasks" : [ { "billedTime" : 2.25,
               "date" : "2013-07-02",
               "description" : "Client requested amends of client page, then pushing staging database live, copying staging images to live, making new client area in live, uploading new sliders and linking them up, testing",
@@ -1188,7 +1188,7 @@
             }
           ]
       },
-      { "name" : "Tim",
+      { "name" : "Tim", "lastInitial" : "M",
         "tasks" : [ { "billedTime" : 0,
               "date" : "2013-07-03",
               "description" : "",

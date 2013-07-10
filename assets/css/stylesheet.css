@@ -14,6 +14,10 @@ h1 { margin: 0 0 10px; text-align: center; font-size: 18px}
 .ticket { font-weight: bold; cursor: pointer; box-sizing: border-box; margin: 1px 0; background: #666; color: #FFF; font-size: 12px; padding: 8px;}
 .ticket:nth-child(2n) { background: #888; }
 
+.users th.minimised { font-size: 14px; color: #EEE;}
+.users .minimised { width: 30px; background: #888;}
+.users .minimised .task { display: none;}
+
 .tasks { min-height: 320px; margin: 0;}
 .task { background: #BBB; font-size: 12px; overflow: hidden; cursor: pointer; border-bottom-color: #BBB;}
 .task strong { font-weight: normal; }
@@ -24,7 +28,7 @@ h1 { margin: 0 0 10px; text-align: center; font-size: 18px}
 .carried-over { background: lightgreen; border-bottom-color: lightgreen;}
 .manager-attention { background: LightCoral; border-bottom-color: LightCoral;}
 .active { background: orange; border-bottom-color: orange;}
-.eight-hour-marker { position: absolute; top: 320px; height: 2px; background: aqua; width: 220px; z-index: 1;}
+.eight-hour-marker { position: absolute; top: 320px; height: 2px; background: aqua; width: 100%; z-index: 1;}
 
 .ui-sortable-helper { background: #999; color: #FFF;}
 .ui-sortable-placeholder { background: #FFF380;}
