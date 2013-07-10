@@ -1,33 +1,30 @@
 body { font-family: arial; margin: 0; }
 ul { padding: 0; list-style: none;}
 h1 { margin: 0 0 10px; text-align: center; font-size: 18px}
-.users { float: left; margin: -8px 0; border-spacing: 8px; margin-left: 290px; }
+.users { float: left; margin: -8px 0; border-spacing: 8px; margin-left: 272px; }
 .users th { padding: 8px; background: #DDD;}
 .users th.minimised { }
-.users td { width: 220px; background: #DDD; position: relative;}
+.users td { vertical-align: top; width: 220px; background: #DDD; position: relative;}
 .users .day { padding: 8px; color: #FFF; background: #888;}
 
 .day>strong { font-size: 14px; display: block; }
 .day>strong span { float: right; color: #777;}
 
-.tickets { height: 100%; position: fixed; z-index: 2; left: 0; top: 0; width: 280px; box-sizing: border-box; font-size: 14px; background: #CCC; padding: 20px 15px 10px; margin-right: 10px;}
-.ticket { font-weight: bold; cursor: pointer; box-sizing: border-box; margin: 1px 0; background: #AAA; color: #FFF; font-size: 12px; padding: 8px;}
+.tickets { border-right: 8px solid #FFF; height: 100%; position: fixed; z-index: 2; left: 0; top: 0; width: 280px; box-sizing: border-box; font-size: 14px; background: #BBB; padding: 15px 15px 10px; margin-right: 10px;}
+.ticket { font-weight: bold; cursor: pointer; box-sizing: border-box; margin: 1px 0; background: #666; color: #FFF; font-size: 12px; padding: 8px;}
 .ticket:nth-child(2n) { background: #888; }
 
-.tasks { height: 360px; margin: 0;}
-.tasks.overflow { overflow: hidden; height: 100px;}
-.tasks.overflow .task { background: #C00; color: #FFF; }
-.task { background: #BBB; font-size: 12px; overflow: hidden; cursor: pointer}
-.task:first-child .info { border-top: 0;}
+.tasks { min-height: 320px; margin: 0;}
+.task { background: #BBB; font-size: 12px; overflow: hidden; cursor: pointer; border-bottom-color: #BBB;}
 .task strong { font-weight: normal; }
-.overflow .task { width: 30px; float: left; overflow: hidden; height: 120px}
-.overflow .task .info { border-right: 1px solid #DDD; height: 112px; border-top: none;}
 .task .info { border-top: 2px solid #EEE; padding: 4px 8px;}
+.task:first-child .info { border-top: 0;}
+.overflow { background: #C00; color: #FFF; }
 .complete { background: limegreen; border-bottom-color: limegreen;}
 .carried-over { background: lightgreen; border-bottom-color: lightgreen;}
 .manager-attention { background: LightCoral; border-bottom-color: LightCoral;}
 .active { background: orange; border-bottom-color: orange;}
-.eight-hour-marker { position: absolute; top: 320px; height: 2px; background: #F00; width: 220px; z-index: 1;}
+.eight-hour-marker { position: absolute; top: 320px; height: 2px; background: aqua; width: 220px; z-index: 1;}
 
 .ui-sortable-helper { background: #999; color: #FFF;}
 .ui-sortable-placeholder { background: #FFF380;}
@@ -39,6 +36,6 @@ h1 { margin: 0 0 10px; text-align: center; font-size: 18px}
 
 .ui-draggable-dragging { width: 220px;}
 
-.popup { position: fixed; width: 500px; height: 250px; top: 50%; left: 50%; background: #FFF; margin-left: -200px; margin-top: -100px; z-index: 3; display: none; padding: 15px; box-sizing: border-box; font-size: 12px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); }
+.popup { position: fixed; width: 500px; height: 250px; top: 50%; left: 50%; background: #FFF; margin-left: -200px; margin-top: -100px; z-index: 3; display: none; padding: 15px; box-sizing: border-box; font-size: 12px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); }
 .popup h2 { margin-top: 0; font-size: 16px; border-width: 0; border-style: solid; border-bottom-width: 5px; padding-bottom: 3px; background: none;}
-.popup p { white-space: pre-wrap;}
+.popup p.description { background: #EEE; padding: 5px; white-space: pre-wrap; line-height: 1.3;}

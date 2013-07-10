@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="en">
 <head>
@@ -29,22 +28,15 @@
 			<!-- ko foreach: $root.visibleDays -->
 			<tbody>
 				<tr>
-					<td class="day" data-bind="attr: { colspan: $root.users().length }">
+					<td class="day" data-bind="attr: { id: 'day-' + $data.date.toISOString().substr(0, 10), colspan: $root.users().length }">
 						<strong data-bind="html: date.toDateString()"></strong>
 					</td>
 				</tr>
 				<tr data-bind="foreach: $root.users">
 					<td>
 						<div class="eight-hour-marker"></div>
-						<ul class="tasks" data-bind="sortable: { items: 'li.pending' }, foreach: validTasksByDay($parent)">
-							<li class="task" data-bind="resizable: {}, doubleClick: function() { $parent.fitTask($data, $parents[1]); }, style: { height: size }, css: ['task-' + id, status().slug].join(' ')">
-								<div class="info">
-									<strong data-bind="text: label"></strong>
-								</div>
-							</li>
-						</ul>
-						<ul class="tasks overflow" data-bind="sortable: { items: 'li.pending', connectWith: '.tasks'}, foreach: overflowTasksByDay($parent)">
-							<li class="task" data-bind="css: 'task-' + id, css: status().slug">
+						<ul class="tasks" data-bind="sortable: { items: 'li.pending' }, foreach: tasksByDay($parent)">
+							<li class="task" data-bind="resizable: {}, doubleClick: function() { $parent.fitTask($data, $parents[1]); }, style: { height: size }, css: ['task-' + id, status().slug, (overflow()? 'overflow' : '')].join(' ')">
 								<div class="info">
 									<strong data-bind="text: label"></strong>
 								</div>
@@ -58,7 +50,7 @@
 		<div class="popup" data-bind="with: selectedTask">
 			<h2 data-bind="css: status().slug, text: ticket.label()"></h2>
 			<p data-bind="html: '<strong>Actual time:</strong> ' + billedTime() + 'hrs (estimated: ' + estimatedTime() + 'hrs)'"></p>
-			<p data-bind="text: description"></p>
+			<p class="description" data-bind="text: description"></p>
 			<label for="task-status-selector">Ticket status:</label>
 			<select id="task-status-selector" data-bind="options: Ticket.prototype.projectStatuses, optionsText: 'name', value: $data.ticket.status"></select>
 		</div>

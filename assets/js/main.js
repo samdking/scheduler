@@ -5,7 +5,7 @@ var scheduler = {
 	selectedTask: ko.observable(),
 	newTicket: function() {
 		this.tickets.push(new Ticket({
-			uid: 'NEW', project_status_uid: 1, summary: 'New ticket - this would be populated by a lightbox prompt'
+			uid: 'NEW', project_status_uid: Ticket.prototype.projectStatuses[1], summary: 'New ticket - this would be populated by a lightbox prompt'
 		}));
 	}
 };
@@ -21,7 +21,7 @@ $.getJSON('data.json', function(data) {
 	scheduler.visibleDays((data.days || []).map(function(date) {
 		return new Day(new Date(date));
 	}));
-	
+
 	Task.prototype.taskStatuses = data.taskStatuses.map(function(status) {
 		return new TaskStatus(status);
 	});
@@ -29,14 +29,14 @@ $.getJSON('data.json', function(data) {
 	Ticket.prototype.projectStatuses = data.projectStatuses.map(function(status) {
 		return new ProjectStatus(status);
 	});
-	
+
 	scheduler.tickets((data.tickets || []).map(function(ticket) {
 		ticket.status = ko.utils.arrayFirst(Ticket.prototype.projectStatuses, function(status) {
 			return status.id == ticket.project_status_uid;
 		});
 		return new Ticket(ticket);
 	}));
-	
+
 	scheduler.users((data.users || []).map(function(user) {
 		user.tasks = (user.tasks || []).map(function(task) {
 			task.ticket = ko.utils.arrayFirst(scheduler.tickets(), function(ticket) {
@@ -53,12 +53,14 @@ $.getJSON('data.json', function(data) {
 	$('.popup').on('click', function() {
 		$(this).hide();
 	});
-	
+
 	$('.users').on('click', '.task', function() {
 		$('.popup').hide();
 		scheduler.selectedTask(ko.dataFor(this));
 		$('.popup').show();
 	});
+
+	window.location.hash = 'day-' + new Date().toISOString().substr(0, 10);
 
 }).fail(function() {
 	alert('Could not find a data.json file, or there was a problem with the JSON file.');
@@ -91,7 +93,7 @@ ko.bindingHandlers.sortable = {
 					task = new Task({
 						ticket: item,
 						uid: 'NEW',
-						task_status_uid: 2,
+						status: Task.prototype.taskStatuses[1],
 						priority: $(this).find('.ticket').getPriority() || 50,
 						estimatedTime: 1
 					});
@@ -104,7 +106,7 @@ ko.bindingHandlers.sortable = {
 				overflow = totalTime + task.estimatedTime() - 8;
 				if (overflow > 0)
 					task.estimatedTime(task.estimatedTime() - overflow);
-				
+
 				viewModel.tasks.push(task);
 			},
 			remove: function(event, ui) {
@@ -160,11 +162,14 @@ ko.bindingHandlers.resizable = {
 			}, valueAccessor()));
 	},
 	update: function(el, value, all, model, context) {
-		if (model.status().name == 'Pending') {
-			var hours = 8;
-			var containerHeight = $(el).parent().height();
-			var maxHours = hours - context.$parent.totalEstimatedTime(context.$parents[1]) + model.estimatedTime();
-			$(el).resizable('option', 'maxHeight', maxHours * 40);
+		if (!model.status().completed) {
+			var hours = 8,
+			    containerHeight = $(el).parent().height(),
+			    task = context.$data,
+			    user = context.$parent,
+			    day = context.$parents[1],
+			    maxHours = hours - user.totalEstimatedTime(day) + model.estimatedTime();
+			$(el).resizable('option', 'minHeight', task.billedTime() * 40);
 		} else {
 			$(el).resizable('disable');
 		}

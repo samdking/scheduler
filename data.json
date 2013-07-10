@@ -24,10 +24,6 @@
         "uid" : "2"
       },
       { "completed" : null,
-        "name" : "Internal",
-        "uid" : "5"
-      },
-      { "completed" : null,
         "name" : "Closed",
         "uid" : "6"
       },
