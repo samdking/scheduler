@@ -38,16 +38,18 @@ $.getJSON('data.json', function(data) {
 	}));
 
 	scheduler.users((data.users || []).map(function(user) {
-		user.tasks = (user.tasks || []).map(function(task) {
+		userObj = new User(user);
+		userObj.tasks((user.tasks || []).map(function(task) {
 			task.ticket = ko.utils.arrayFirst(scheduler.tickets(), function(ticket) {
 				return ticket.id == task.project_uid;
 			});
 			task.status = ko.utils.arrayFirst(Task.prototype.taskStatuses, function(status) {
 				return status.id == task.task_status_uid;
 			});
+			task.user = userObj;
 			return new Task(task);
-		});
-		return new User(user);
+		}));
+		return userObj;
 	}));
 
 	$('.popup .close').on('click', function() {
@@ -102,6 +104,7 @@ ko.bindingHandlers.sortable = {
 					ui.item.remove();
 				}
 
+				task.user(viewModel);
 				task.date = day.date;
 				overflow = totalTime + task.estimatedTime() - 8;
 				if (overflow > 0)

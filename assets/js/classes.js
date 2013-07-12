@@ -3,6 +3,7 @@
 	{
 		var self = this;
 		this.id = data.uid || 'NEW';
+		this.user = ko.observable(data.user);
 		this.ticket = data.ticket || {};
 		this.description = data.description;
 		this.estimatedTime = ko.observable(data.estimatedTime || 0);
