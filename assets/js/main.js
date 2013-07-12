@@ -50,8 +50,8 @@ $.getJSON('data.json', function(data) {
 		return new User(user);
 	}));
 
-	$('.popup').on('click', function() {
-		$(this).hide();
+	$('.popup .close').on('click', function() {
+		$(this).parent('.popup').hide();
 	});
 
 	$('.users').on('click', '.task', function() {
