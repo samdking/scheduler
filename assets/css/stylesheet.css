@@ -16,12 +16,14 @@ h1 { margin: 0 0 10px; text-align: center; font-size: 18px}
 
 .users th.minimised { font-size: 14px; color: #EEE;}
 .users .minimised { width: 30px; background: #888;}
-.users .minimised .task { display: none;}
+.users .minimised .task { opacity: 0.5;}
+.users .minimised .task .info { border-color: #888;}
+.users .minimised .task .info strong { display: none;}
 
 .tasks { min-height: 320px; margin: 0;}
 .task { background: #BBB; font-size: 12px; overflow: hidden; cursor: pointer; border-bottom-color: #BBB;}
 .task strong { font-weight: normal; }
-.task .info { border-top: 2px solid #EEE; padding: 4px 8px;}
+.task .info { border-top: 2px solid #DDD; padding: 4px 8px;}
 .task:first-child .info { border-top: 0;}
 .overflow { background: #C00; color: #FFF; }
 .complete { background: limegreen; border-bottom-color: limegreen;}
