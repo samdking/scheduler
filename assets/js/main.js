@@ -5,14 +5,14 @@ var scheduler = {
 	selectedTask: ko.observable(),
 	newTicket: function() {
 		this.tickets.push(new Ticket({
-			uid: 'NEW', project_status_uid: Ticket.prototype.projectStatuses[1], summary: 'New ticket - this would be populated by a lightbox prompt'
+			uid: 'NEW', status: Ticket.prototype.projectStatuses[1], summary: 'New ticket - this would be populated by a lightbox prompt'
 		}));
 	}
 };
 
 scheduler.activeTickets = ko.computed(function() {
 	return ko.utils.arrayFilter(scheduler.tickets(), function(ticket) {
-		return ticket.project_status_uid() == 1;
+		return ticket.status() && ticket.status().id == 1;
 	});
 });
 
