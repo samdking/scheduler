@@ -2,7 +2,7 @@
 	function Task(data)
 	{
 		var self = this;
-		this.id = data.uid || 'NEW';
+		this.id = ko.observable(data.uid || 'NEW');
 		this.user = ko.observable(data.user);
 		this.ticket = data.ticket || {};
 		this.description = data.description;
@@ -22,8 +22,20 @@
 			return (self.timeTaken() * 40) + 'px';
 		});
 		this.label = ko.computed(function() {
-			return '#' + this.id + ' ' + this.ticket.name + ' (' + this.timeTaken() + 'hrs)';// + '[' + this.priority() + ']';
+			return '#' + this.id() + ' ' + this.ticket.name + ' (' + this.timeTaken() + 'hrs)';
 		}, this);
+		this.dbFields = function() {
+			return {
+				user_uid: self.user().id,
+				project_uid: self.ticket.id,
+				description: self.description,
+				datetime: self.date.toISOString().substr(0, 10),
+				task_status_uid: self.status().id,
+				billedTime: self.billedTime() * 60,
+				estimated_time: self.estimatedTime() * 60,
+				priority: self.priority()
+			};
+		};
 	}
 
 	function Ticket(data)
@@ -42,6 +54,7 @@
 	function User(data)
 	{
 		var self = this;
+		this.id = data.id;
 		this.name = data.name;
 		this.lastInitial = data.lastInitial;
 		this.tasks = ko.observableArray(data.tasks);

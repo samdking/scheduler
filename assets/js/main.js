@@ -7,6 +7,32 @@ var scheduler = {
 		this.tickets.push(new Ticket({
 			uid: 'NEW', status: Ticket.prototype.projectStatuses[1], summary: 'New ticket - this would be populated by a lightbox prompt'
 		}));
+	},
+	save: function(obj, callback) {
+		if (obj.id() === 'NEW') {
+			console.log('creating new task');
+			$.ajax({
+				url: '/api/tasks',
+				method: 'POST',
+				dataType: 'JSON',
+				data: obj.dbFields()
+			}).done(function(newObj) {
+				if (callback)
+					callback(newObj);
+				obj.id(newObj.uid);
+			});
+		} else {
+			$.ajax({
+				url: '/api/tasks/' + obj.id(),
+				method: 'PUT',
+				dataType: 'JSON',
+				data: obj.dbFields()
+			}).done(function(newObj) {
+				if (callback)
+					callback(newObj);
+			});
+			console.log('updating task #' + obj.id());
+		}
 	}
 };
 
@@ -110,6 +136,7 @@ ko.bindingHandlers.sortable = {
 				if (overflow > 0)
 					task.estimatedTime(task.estimatedTime() - overflow);
 
+				context.$root.save(task);
 				viewModel.tasks.push(task);
 			},
 			remove: function(event, ui) {
@@ -158,9 +185,12 @@ ko.bindingHandlers.resizable = {
 			.resizable($.extend({
 				handles: 's',
 				grid: [0, 10],
-				stop: function() {
+				resize: function() {
 					var height = $(this).height();
 					viewModel.estimatedTime(height / 40);
+				},
+				stop: function() {
+					context.$root.save(viewModel);
 				}
 			}, valueAccessor()));
 	},
