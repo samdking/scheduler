@@ -42,7 +42,10 @@ scheduler.activeTickets = ko.computed(function() {
 	});
 });
 
-$.getJSON('data.json', function(data) {
+$.getJSON('data.json.php', function(data) {
+
+	$('.loading').hide();
+	$('.users').show();
 
 	scheduler.visibleDays((data.days || []).map(function(date) {
 		return new Day(new Date(date));

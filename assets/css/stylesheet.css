@@ -1,7 +1,7 @@
 body { font-family: arial; margin: 0; }
 ul { padding: 0; list-style: none;}
 h1 { margin: 0 0 10px; text-align: center; font-size: 18px}
-.users { float: left; margin: -8px 0; border-spacing: 8px; margin-left: 272px; }
+.users { display: none; float: left; margin: -8px 0; border-spacing: 8px; margin-left: 272px; }
 .users th { padding: 8px; background: #DDD;}
 .users th.minimised { }
 .users td { vertical-align: top; width: 220px; background: #DDD; position: relative;}
@@ -46,3 +46,5 @@ h1 { margin: 0 0 10px; text-align: center; font-size: 18px}
 .popup h2 { margin-top: 0; font-size: 16px; border-width: 0; border-style: solid; border-bottom-width: 5px; padding-bottom: 3px; background: none;}
 .popup p.description { background: #EEE; padding: 5px; white-space: pre-wrap; line-height: 1.3;}
 .popup .close { position: absolute; right: 5px; top: 5px; display: block; width: 15px; height: 15px; background: #000; cursor: pointer;}
+
+.loading { margin-left: 270px; padding: 20px; font-size: 14px;}
