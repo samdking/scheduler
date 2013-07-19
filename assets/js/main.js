@@ -1,55 +1,18 @@
-var scheduler = {
-	visibleDays: ko.observableArray([]),
-	tickets: ko.observableArray([]),
-	users: ko.observableArray([]),
-	selectedTask: ko.observable(),
-	newTicket: function() {
-		this.tickets.push(new Ticket({
-			uid: 'NEW', status: Ticket.prototype.projectStatuses[1], summary: 'New ticket - this would be populated by a lightbox prompt'
-		}));
-	},
-	save: function(obj, callback) {
-		if (obj.id() === 'NEW') {
-			console.log('creating new task');
-			$.ajax({
-				url: '/api/tasks',
-				method: 'POST',
-				dataType: 'JSON',
-				data: obj.dbFields()
-			}).done(function(newObj) {
-				if (callback)
-					callback(newObj);
-				obj.id(newObj.uid);
-			});
-		} else {
-			$.ajax({
-				url: '/api/tasks/' + obj.id(),
-				method: 'PUT',
-				dataType: 'JSON',
-				data: obj.dbFields()
-			}).done(function(newObj) {
-				if (callback)
-					callback(newObj);
-			});
-			console.log('updating task #' + obj.id());
-		}
-	}
-};
 
-scheduler.activeTickets = ko.computed(function() {
-	return ko.utils.arrayFilter(scheduler.tickets(), function(ticket) {
-		return ticket.status() && ticket.status().id == 1;
-	});
-});
+var scheduler;
 
 $.getJSON('data.json.php', function(data) {
 
-	$('.loading').hide();
-	$('.users').show();
+	var taskCount = 0, ticketCount = 0;
 
-	scheduler.visibleDays((data.days || []).map(function(date) {
+	scheduler = new Scheduler((data.days || []).map(function(date) {
 		return new Day(new Date(date));
 	}));
+
+	//scheduler.authenticate();
+
+	$('.loading').hide();
+	$('.users').show();
 
 	Task.prototype.taskStatuses = data.taskStatuses.map(function(status) {
 		return new TaskStatus(status);
@@ -60,26 +23,25 @@ $.getJSON('data.json.php', function(data) {
 	});
 
 	scheduler.tickets((data.tickets || []).map(function(ticket) {
-		ticket.status = ko.utils.arrayFirst(Ticket.prototype.projectStatuses, function(status) {
-			return status.id == ticket.project_status_uid;
-		});
+		ticketCount++;
 		return new Ticket(ticket);
 	}));
 
 	scheduler.users((data.users || []).map(function(user) {
 		userObj = new User(user);
 		userObj.tasks((user.tasks || []).map(function(task) {
+			taskCount++;
 			task.ticket = ko.utils.arrayFirst(scheduler.tickets(), function(ticket) {
 				return ticket.id == task.project_uid;
-			});
-			task.status = ko.utils.arrayFirst(Task.prototype.taskStatuses, function(status) {
-				return status.id == task.task_status_uid;
 			});
 			task.user = userObj;
 			return new Task(task);
 		}));
 		return userObj;
 	}));
+
+	console.log('tasks: ' + taskCount);
+	console.log('tickets: ' + ticketCount);
 
 	$('.popup .close').on('click', function() {
 		$(this).parent('.popup').hide();
@@ -92,6 +54,10 @@ $.getJSON('data.json.php', function(data) {
 	});
 
 	window.location.hash = 'day-' + new Date().toISOString().substr(0, 10);
+
+	ko.applyBindings(scheduler);
+
+	//scheduler.pollNewData(10);
 
 }).fail(function() {
 	alert('Could not find a data.json file, or there was a problem with the JSON file.');
@@ -124,9 +90,9 @@ ko.bindingHandlers.sortable = {
 					task = new Task({
 						ticket: item,
 						uid: 'NEW',
-						status: Task.prototype.taskStatuses[1],
+						task_status_uid: 2,
 						priority: $(this).find('.ticket').getPriority() || 50,
-						estimatedTime: 1
+						estimated_time: 1
 					});
 				} else {
 					task = item;
@@ -219,5 +185,3 @@ ko.bindingHandlers.doubleClick = {
 		});
 	}
 };
-
-ko.applyBindings(scheduler);
