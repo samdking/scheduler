@@ -1,19 +1,18 @@
 body { font-family: arial; margin: 0; }
 ul { padding: 0; list-style: none;}
 h1 { margin: 0 0 10px; text-align: center; font-size: 18px}
-.users { display: none; float: left; margin: -8px 0; border-spacing: 8px; margin-left: 272px; }
-.users th { padding: 8px; background: #DDD;}
-.users th.minimised { }
-.users td { vertical-align: top; width: 220px; background: #DDD; position: relative;}
-.users .day { padding: 8px; color: #FFF; background: #888;}
 
 .day>strong { font-size: 14px; display: block; }
 .day>strong span { float: right; color: #777;}
 
-.tickets { border-right: 8px solid #FFF; height: 100%; position: fixed; z-index: 2; left: 0; top: 0; width: 280px; box-sizing: border-box; font-size: 14px; background: #BBB; padding: 15px 15px 10px; margin-right: 10px;}
-.ticket { font-weight: bold; cursor: pointer; box-sizing: border-box; margin: 1px 0; background: #666; color: #FFF; font-size: 12px; padding: 8px;}
-.ticket:nth-child(2n) { background: #888; }
+.tickets { overflow: auto; height: 100%; position: fixed; z-index: 2; left: 0; top: 0; min-width: 280px; width: 18%; box-sizing: border-box; font-size: 14px; background: #BBB; padding: 15px 15px 10px; }
+.ticket { overflow: hidden; font-weight: bold; cursor: pointer; box-sizing: border-box; margin: 1px 0; background: #666; color: #FFF; font-size: 12px; padding: 8px;}
 
+.users { position: fixed; height: 100%; right: 0; top: 0; width: 82%; overflow: auto;}
+.users table { display: none; margin: -8px 0; border-spacing: 8px; }
+.users th { padding: 8px; background: #DDD;}
+.users td { vertical-align: top; background: #DDD; position: relative;}
+.users .day { padding: 8px; color: #FFF; background: #888;}
 .users th.minimised { font-size: 14px; color: #EEE;}
 .users .minimised { width: 30px; background: #888;}
 .users .minimised .task { opacity: 0.5;}
@@ -29,7 +28,7 @@ h1 { margin: 0 0 10px; text-align: center; font-size: 18px}
 .complete { background: limegreen; border-bottom-color: limegreen;}
 .carried-over { background: lightgreen; border-bottom-color: lightgreen;}
 .manager-attention { background: LightCoral; border-bottom-color: LightCoral;}
-.active { background: orange; border-bottom-color: orange;}
+.active { background: orange; border-bottom-color: orange; color: #222;}
 .eight-hour-marker { position: absolute; top: 320px; height: 2px; background: aqua; width: 100%; z-index: 1;}
 
 .ui-sortable-helper { background: #999; color: #FFF;}
@@ -47,4 +46,4 @@ h1 { margin: 0 0 10px; text-align: center; font-size: 18px}
 .popup p.description { background: #EEE; padding: 5px; white-space: pre-wrap; line-height: 1.3;}
 .popup .close { position: absolute; right: 5px; top: 5px; display: block; width: 15px; height: 15px; background: #000; cursor: pointer;}
 
-.loading { margin-left: 270px; padding: 20px; font-size: 14px;}
+.loading { padding: 20px; font-size: 14px;}

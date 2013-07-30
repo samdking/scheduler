@@ -11,42 +11,46 @@
 	<link rel="stylesheet" href="/scheduler/assets/css/stylesheet.css">
 </head>
 <body>
-	<div class="container" data-bind="style: { width: (users().length+1)*260 + 'px' }">
+	<div class="container">
 		<section class="tickets">
-			<h1>Tickets</h1>
+			<h1>Tickets <span data-bind="text: '(' + activeTickets().length + ')'"></span></h1>
 			<ul data-bind="foreach: activeTickets">
-				<li class="ticket" data-bind="draggable: { connectToSortable: '.tasks', snap: '.tasks' }, css: 'ticket-' + id, text: label"></li>
+				<li class="ticket" data-bind="draggable: { connectToSortable: '.tasks', snap: '.tasks' }, css: ['ticket-' + id, status().slug].join(' '), text: label"></li>
 			</ul>
 			<button data-bind="click: newTicket">New</button>
 		</section>
-		<table class="users">
-			<thead>
-				<tr data-bind="foreach: users">
-					<th data-bind="click: toggleInactivity, css: {minimised: !active()}, text: label"></th>
-				</tr>
-			</thead>
-			<!-- ko foreach: $root.visibleDays -->
-			<tbody>
-				<tr>
-					<td class="day" data-bind="attr: { id: 'day-' + $data.date.toISOString().substr(0, 10), colspan: $root.users().length }">
-						<strong data-bind="html: date.toDateString()"></strong>
-					</td>
-				</tr>
-				<tr data-bind="foreach: $root.users">
-					<td data-bind="css: {minimised: !active()}">
-						<div class="eight-hour-marker"></div>
-						<ul class="tasks" data-bind="sortable: { items: 'li.pending' }, foreach: tasksByDay($parent)">
-							<li class="task" data-bind="resizable: {}, doubleClick: function() { $parent.fitTask($data, $parents[1]); }, style: { height: size }, css: ['task-' + id, status().slug, (overflow()? 'overflow' : '')].join(' ')">
-								<div class="info">
-									<strong data-bind="text: label"></strong>
-								</div>
-							</li>
-						</ul>
-					</td>
-				</tr>
-			</tbody>
-			<!-- /ko -->
-		</table>
+
+		<div class="users">
+			<div class="loading">Loading data</div>
+			<table>
+				<thead>
+					<tr data-bind="foreach: users">
+						<th data-bind="click: toggleInactivity, css: {minimised: !active()}, text: label"></th>
+					</tr>
+				</thead>
+				<!-- ko foreach: $root.visibleDays -->
+				<tbody>
+					<tr>
+						<td class="day" data-bind="attr: { id: 'day-' + $data.date.toISOString().substr(0, 10), colspan: $root.users().length }">
+							<strong data-bind="html: date.toDateString()"></strong>
+						</td>
+					</tr>
+					<tr data-bind="foreach: $root.users">
+						<td data-bind="css: {minimised: !active()}">
+							<div class="eight-hour-marker"></div>
+							<ul class="tasks" data-bind="sortable: { items: 'li.pending' }, foreach: tasksByDay($parent)">
+								<li class="task" data-bind="resizable: {}, doubleClick: function() { $parent.fitTask($data, $parents[1]); }, style: { height: size }, css: ['task-' + id, status().slug, (overflow()? 'overflow' : '')].join(' ')">
+									<div class="info">
+										<strong data-bind="text: label"></strong>
+									</div>
+								</li>
+							</ul>
+						</td>
+					</tr>
+				</tbody>
+				<!-- /ko -->
+			</table>
+		</div>
 		<div class="popup">
 			<!-- ko with: selectedTask -->
 			<h2 data-bind="css: status().slug, text: ticket.label()"></h2>
@@ -61,7 +65,6 @@
 			<a class="close"></a>
 		</div>
 	</div>
-	<div class="loading">Loading data</div>
 	<script src="/scheduler/assets/js/classes.js"></script>
 	<script src="/scheduler/assets/js/main.js"></script>
 </body>
