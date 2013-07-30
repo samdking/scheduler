@@ -55,6 +55,7 @@
 		this.summary = ko.observable();
 		this.name = ko.observable();
 		this.status = ko.observable();
+		this.department_uid = ko.observable();
 		this.label = ko.computed(function() {
 			var parts = [this.name(), this.summary()].filter(function(n) { return n; });
 			return parts.join(' - ');
@@ -62,12 +63,28 @@
 		this.populate = function(data) {
 			this.id = data.uid || null;
 			this.summary(data.summary);
-			this.name(data.name || '{' + this.id + '}');
+			this.name(data.name || '[' + this.id + ']');
 			this.status(ko.utils.arrayFirst(Ticket.prototype.projectStatuses, function(status) {
 				return status.id == data.project_status_uid;
 			}));
+			this.department_uid(parseInt(data.department_uid || 0, 10));
 		};
 		this.populate(data);
+	}
+
+	function Config(data)
+	{
+		var self = this;
+		this.config = data? JSON.parse(data) : {};
+		return {
+			get: function(key) {
+				return self.config[key];
+			},
+			set: function(key, value) {
+				self.config[key] = value;
+				localStorage.setItem('scheduler', JSON.stringify(self.config));
+			}
+		};
 	}
 
 	function User(data)
@@ -77,12 +94,11 @@
 		this.name = data.name;
 		this.lastInitial = data.lastInitial;
 		this.tasks = ko.observableArray(data.tasks);
-		this.active = ko.observable(true);
+		this.active = ko.observable(data.active);
 		this.active.subscribe(function(newVal) {
-			var data = localStorage.getItem('scheduler')? JSON.parse(localStorage.getItem('scheduler')) : {};
-			data.activeUsers = data.activeUsers || {};
-			data.activeUsers[self.id] = newVal;
-			localStorage.setItem('scheduler', JSON.stringify(data));
+			var data = config.get('activeUsers') || {};
+			data[self.id] = newVal;
+			config.set('activeUsers', data);
 		});
 		this.label = ko.computed(function() {
 			return self.active()? self.name : self.name.substr(0, 1) + self.lastInitial;
@@ -161,6 +177,8 @@
 		this.id = data.uid;
 		this.name = data.name;
 		this.slug = data.name.toLowerCase().replace(' ', '-');
+		this.complete = Boolean(parseInt(data.complete, 10));
+		this.sorting = parseInt(data.sorting, 10);
 	}
 
 	function Scheduler(days)
@@ -170,9 +188,19 @@
 		this.users = ko.observableArray([]);
 		this.selectedTask = ko.observable();
 		this.activeTickets = ko.computed(function() {
-			return ko.utils.arrayFilter(this.tickets(), function(ticket) {
-				return ticket.status() && ticket.status().id == 1;
+			var tickets = ko.utils.arrayFilter(this.tickets(), function(ticket) {
+				return ticket.status() && (ticket.status().complete === false) && ticket.department_uid() != 4;
 			});
+			tickets.sort(function(a, b) {
+				a = a.status().sorting;
+				b = b.status().sorting;
+				if (a < b)
+					return -1;
+				if (b < a)
+					return 1;
+				return 0;
+			});
+			return tickets;
 		}, this);
 		
 		this.newTicket = function() {
@@ -208,7 +236,7 @@
 			}
 		};
 		
-		this.pollNewData = function(seconds) {
+		this.setupDataPolling = function(seconds) {
 			window.setInterval(function() {
 				console.log('polling for new data');
 				updateData();
@@ -240,11 +268,16 @@
 			});
 		};
 		
-		this.authenticate = function() {
+		this.authenticate = function(done, fail) {
 			$.ajax({
-				type: 'post',
-				url: '/api/auth/login',
-				data: {username: 'sam', password: 'ninja'}
+				type: 'get',
+				url: '/api/auth/check'
+			}).done(function() {
+				if (done)
+					done();
+			}).fail(function(jqXHR, textStatus, errorThrown) {
+				if (fail)
+					fail(jqXHR, textStatus, errorThrown);
 			});
 		};
 	}

@@ -5,8 +5,12 @@ h1 { margin: 0 0 10px; text-align: center; font-size: 18px}
 .day>strong { font-size: 14px; display: block; }
 .day>strong span { float: right; color: #777;}
 
-.tickets { overflow: auto; height: 100%; position: fixed; z-index: 2; left: 0; top: 0; min-width: 280px; width: 18%; box-sizing: border-box; font-size: 14px; background: #BBB; padding: 15px 15px 10px; }
-.ticket { overflow: hidden; font-weight: bold; cursor: pointer; box-sizing: border-box; margin: 1px 0; background: #666; color: #FFF; font-size: 12px; padding: 8px;}
+.tickets { overflow: auto; height: 100%; position: fixed; z-index: 2; left: 0; top: 0; min-width: 280px; width: 18%; box-sizing: border-box; font-size: 12px; background: #BBB; padding: 15px 15px 10px; }
+.tickets .pending { background: #666 }
+.ticket { overflow: hidden; cursor: pointer; box-sizing: border-box; margin: 1px 0; background: #666; color: #FFF; padding: 8px;}
+.ticket strong { font-weight: bold; display: block; margin-bottom: 2px;}
+
+.colours { margin: -15px 0 15px; height: 8px; width: 100%; border-spacing: 0;}
 
 .users { position: fixed; height: 100%; right: 0; top: 0; width: 82%; overflow: auto;}
 .users table { display: none; margin: -8px 0; border-spacing: 8px; }
@@ -27,7 +31,9 @@ h1 { margin: 0 0 10px; text-align: center; font-size: 18px}
 .overflow { background: #C00; color: #FFF; }
 .complete { background: limegreen; border-bottom-color: limegreen;}
 .carried-over { background: lightgreen; border-bottom-color: lightgreen;}
-.manager-attention { background: LightCoral; border-bottom-color: LightCoral;}
+.manager-attention { background: LightCoral; border-bottom-color: LightCoral; color: #000;}
+.stalled { background: IndianRed;}
+.request { background: NavajoWhite; border-bottom-color: NavajoWhite; color: #222;}
 .active { background: orange; border-bottom-color: orange; color: #222;}
 .eight-hour-marker { position: absolute; top: 320px; height: 2px; background: aqua; width: 100%; z-index: 1;}
 

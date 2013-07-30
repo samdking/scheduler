@@ -1,66 +1,79 @@
 
-var scheduler;
+var scheduler = new Scheduler();
+var config = new Config(localStorage.getItem('scheduler'));
 
-$.getJSON('data.json.php', function(data) {
+scheduler.authenticate(function() {
 
-	var taskCount = 0, ticketCount = 0;
+	$.getJSON('data.json.php', function(data) {
 
-	scheduler = new Scheduler((data.days || []).map(function(date) {
-		return new Day(new Date(date));
-	}));
+		var taskCount = 0, ticketCount = 0;
 
-	//scheduler.authenticate();
-
-	$('.loading').hide();
-	$('.users').show();
-
-	Task.prototype.taskStatuses = data.taskStatuses.map(function(status) {
-		return new TaskStatus(status);
-	});
-
-	Ticket.prototype.projectStatuses = data.projectStatuses.map(function(status) {
-		return new ProjectStatus(status);
-	});
-
-	scheduler.tickets((data.tickets || []).map(function(ticket) {
-		ticketCount++;
-		return new Ticket(ticket);
-	}));
-
-	scheduler.users((data.users || []).map(function(user) {
-		userObj = new User(user);
-		userObj.tasks((user.tasks || []).map(function(task) {
-			taskCount++;
-			task.ticket = ko.utils.arrayFirst(scheduler.tickets(), function(ticket) {
-				return ticket.id == task.project_uid;
-			});
-			task.user = userObj;
-			return new Task(task);
+		scheduler.visibleDays((data.days || []).map(function(date) {
+			return new Day(new Date(date));
 		}));
-		return userObj;
-	}));
 
-	console.log('tasks: ' + taskCount);
-	console.log('tickets: ' + ticketCount);
+		$('.loading').hide();
+		$('.users table').show();
 
-	$('.popup .close').on('click', function() {
-		$(this).parent('.popup').hide();
+		Task.prototype.taskStatuses = data.taskStatuses.map(function(status) {
+			return new TaskStatus(status);
+		});
+
+		Ticket.prototype.projectStatuses = data.projectStatuses.map(function(status) {
+			return new ProjectStatus(status);
+		});
+
+		scheduler.incompleteProjectStatuses = ko.computed(function() {
+			return ko.utils.arrayFilter(Ticket.prototype.projectStatuses, function(status) {
+				return !status.complete;
+			});
+		});
+
+		scheduler.tickets((data.tickets || []).map(function(ticket) {
+			ticketCount++;
+			return new Ticket(ticket);
+		}));
+
+		var activeUsers = config.get('activeUsers') || {};
+		scheduler.users((data.users || []).map(function(user) {
+			user.active = typeof activeUsers[user.id] === 'undefined'? true : activeUsers[user.id];
+			userObj = new User(user);
+			userObj.tasks((user.tasks || []).map(function(task) {
+				taskCount++;
+				task.ticket = ko.utils.arrayFirst(scheduler.tickets(), function(ticket) {
+					return ticket.id == task.project_uid;
+				});
+				task.user = userObj;
+				return new Task(task);
+			}));
+			return userObj;
+		}));
+
+		console.log('tasks: ' + taskCount);
+		console.log('tickets: ' + ticketCount);
+
+		$('.popup .close').on('click', function() {
+			$(this).parent('.popup').hide();
+		});
+
+		$('.users').on('click', '.task', function() {
+			$('.popup').hide();
+			scheduler.selectedTask(ko.dataFor(this));
+			$('.popup').show();
+		});
+
+		window.location.hash = 'day-' + new Date().toISOString().substr(0, 10);
+
+		ko.applyBindings(scheduler);
+
+		//scheduler.setupDataPolling(10);
+
+	}).fail(function() {
+		alert('Could not find a data.json file, or there was a problem with the JSON file.');
 	});
 
-	$('.users').on('click', '.task', function() {
-		$('.popup').hide();
-		scheduler.selectedTask(ko.dataFor(this));
-		$('.popup').show();
-	});
-
-	window.location.hash = 'day-' + new Date().toISOString().substr(0, 10);
-
-	ko.applyBindings(scheduler);
-
-	//scheduler.pollNewData(10);
-
-}).fail(function() {
-	alert('Could not find a data.json file, or there was a problem with the JSON file.');
+}, function(jqXHR, textStatus, errorThrown) {
+	alert(errorThrown);
 });
 
 ko.bindingHandlers.sortable = {
@@ -141,7 +154,10 @@ ko.bindingHandlers.draggable = {
 			revert: "invalid",
 			snapMode: 'inner',
 			snapTolerance: 20,
-			revertDuration: 200
+			revertDuration: 200,
+			scroll: false,
+			appendTo: 'body',
+			zIndex: 2
 		}, valueAccessor()));
 	}
 };
