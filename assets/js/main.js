@@ -127,7 +127,7 @@ ko.bindingHandlers.sortable = {
 						uid: 'NEW',
 						task_status_uid: 2,
 						priority: $(this).find('.ticket').getPriority() || 50,
-						estimated_time: 1
+						estimated_time: item.department_uid() == 3 && item.allocatedTime()? item.allocatedTime() : 1
 					});
 				} else {
 					task = item;
