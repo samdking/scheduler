@@ -5,75 +5,16 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 	<title>Scheduler</title> 
 	<script src="http://code.jquery.com/jquery-1.8.2.js"></script>
-	<script src="/scheduler/assets/js/knockout.js"></script>
 	<script src="http://code.jquery.com/jquery-1.9.1.js"></script>
 	<script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+	<script src="/scheduler/assets/js/knockout.js"></script>
+	<script src="/scheduler/assets/js/classes.js"></script>
 	<link rel="stylesheet" href="/scheduler/assets/css/stylesheet.css">
 </head>
 <body>
 	<div class="container">
-		<section class="tickets">
-			<table class="colours">
-				<tr data-bind="foreach: incompleteProjectStatuses">
-					<td data-bind="css: slug, attr: {title: name}"></td>
-				</tr>
-			</table>
-			<h1>Tickets <span data-bind="text: '(' + activeTickets().length + ')'"></span></h1>
-			<ul data-bind="foreach: activeTickets">
-				<li class="ticket" data-bind="draggable: { connectToSortable: '.tasks', snap: '.tasks' }, css: ['ticket-' + id, status().slug].join(' ')">
-					<strong data-bind="text: name"></strong>
-					<span data-bind="text: summary() || '---'"></span>
-				</li>
-			</ul>
-			<button data-bind="click: newTicket">New</button>
-		</section>
-
-		<div class="users">
-			<div class="loading">Loading data</div>
-			<table>
-				<thead>
-					<tr data-bind="foreach: users">
-						<th data-bind="click: toggleInactivity, css: {minimised: !active()}, text: label"></th>
-					</tr>
-				</thead>
-				<!-- ko foreach: $root.visibleDays -->
-				<tbody>
-					<tr>
-						<td class="day" data-bind="attr: { id: 'day-' + $data.date.toISOString().substr(0, 10), colspan: $root.users().length }">
-							<strong data-bind="html: date.toDateString()"></strong>
-						</td>
-					</tr>
-					<tr data-bind="foreach: $root.users">
-						<td data-bind="css: {minimised: !active()}">
-							<div class="eight-hour-marker"></div>
-							<ul class="tasks" data-bind="sortable: { items: 'li.pending' }, foreach: tasksByDay($parent)">
-								<li class="task" data-bind="resizable: {}, doubleClick: function() { $parent.fitTask($data, $parents[1]); }, style: { height: size }, css: ['task-' + id(), status().slug, (overflow()? 'overflow' : '')].join(' ')">
-									<div class="info">
-										<strong data-bind="text: label"></strong>
-									</div>
-								</li>
-							</ul>
-						</td>
-					</tr>
-				</tbody>
-				<!-- /ko -->
-			</table>
-		</div>
-		<div class="popup">
-			<!-- ko with: selectedTask -->
-			<h2 data-bind="css: status().slug, text: ticket().label()"></h2>
-			<ul>
-				<li data-bind="html: '<strong>Actual time:</strong> ' + billedTime() + 'hrs (estimated: ' + estimatedTime() + 'hrs)'"></li>
-				<li data-bind="html: '<strong>User</strong> ' + user().name"></li>
-			</ul>
-			<p class="description" data-bind="text: description"></p>
-			<label for="task-status-selector">Ticket status:</label>
-			<select id="task-status-selector" data-bind="options: Ticket.prototype.projectStatuses, optionsText: 'name', value: $data.ticket().status"></select>
-			<!-- /ko -->
-			<a class="close"></a>
-		</div>
+		<div class="loading">Loading data</div>
 	</div>
-	<script src="/scheduler/assets/js/classes.js"></script>
 	<script src="/scheduler/assets/js/main.js"></script>
 </body>
 </html>

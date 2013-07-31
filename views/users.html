@@ -1,0 +1,30 @@
+		<div class="users">
+			<table>
+				<thead>
+					<tr data-bind="foreach: users">
+						<th data-bind="click: toggleInactivity, css: {minimised: !active()}, text: label"></th>
+					</tr>
+				</thead>
+				<!-- ko foreach: $root.visibleDays -->
+				<tbody>
+					<tr>
+						<td class="day" data-bind="attr: { id: 'day-' + $data.date.toISOString().substr(0, 10), colspan: $root.users().length }">
+							<strong data-bind="html: date.toDateString()"></strong>
+						</td>
+					</tr>
+					<tr data-bind="foreach: $root.users">
+						<td data-bind="css: {minimised: !active()}">
+							<div class="eight-hour-marker"></div>
+							<ul class="tasks" data-bind="sortable: { items: 'li.pending' }, foreach: tasksByDay($parent)">
+								<li class="task" data-bind="resizable: {}, doubleClick: function() { $parent.fitTask($data, $parents[1]); }, style: { height: size }, css: ['task-' + id(), status().slug, (overflow()? 'overflow' : '')].join(' ')">
+									<div class="info">
+										<strong data-bind="text: label"></strong>
+									</div>
+								</li>
+							</ul>
+						</td>
+					</tr>
+				</tbody>
+				<!-- /ko -->
+			</table>
+		</div>

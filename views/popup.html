@@ -1,0 +1,13 @@
+		<div class="popup">
+			<!-- ko with: selectedTask -->
+			<h2 data-bind="css: status().slug, text: ticket().label()"></h2>
+			<ul>
+				<li data-bind="html: '<strong>Actual time:</strong> ' + billedTime() + 'hrs (estimated: ' + estimatedTime() + 'hrs)'"></li>
+				<li data-bind="html: '<strong>User</strong> ' + user().name"></li>
+			</ul>
+			<p class="description" data-bind="text: description"></p>
+			<label for="task-status-selector">Ticket status:</label>
+			<select id="task-status-selector" data-bind="options: Ticket.prototype.projectStatuses, optionsText: 'name', value: $data.ticket().status"></select>
+			<!-- /ko -->
+			<a class="close"></a>
+		</div>

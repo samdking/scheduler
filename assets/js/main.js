@@ -1,8 +1,7 @@
 
 var scheduler = new Scheduler();
 var config = new Config(localStorage.getItem('scheduler'));
-
-scheduler.authenticate(function() {
+var getData = function(callback) {
 
 	$.getJSON('data.json.php', function(data) {
 
@@ -12,8 +11,20 @@ scheduler.authenticate(function() {
 			return new Day(new Date(date));
 		}));
 
-		$('.loading').hide();
-		$('.users table').show();
+		scheduler.loadViews(['views/tickets.html', 'views/users.html', 'views/popup.html'], $('.container'), function() {
+			if (callback)
+				callback();
+			$('.loading').hide();
+			$('.popup .close').on('click', function() {
+				$(this).parent('.popup').hide();
+			});
+			$('.users').on('click', '.task', function() {
+				$('.popup').hide();
+				scheduler.selectedTask(ko.dataFor(this));
+				$('.popup').show();
+			});
+			ko.applyBindings(scheduler);
+		});
 
 		Task.prototype.taskStatuses = data.taskStatuses.map(function(status) {
 			return new TaskStatus(status);
@@ -52,19 +63,7 @@ scheduler.authenticate(function() {
 		console.log('tasks: ' + taskCount);
 		console.log('tickets: ' + ticketCount);
 
-		$('.popup .close').on('click', function() {
-			$(this).parent('.popup').hide();
-		});
-
-		$('.users').on('click', '.task', function() {
-			$('.popup').hide();
-			scheduler.selectedTask(ko.dataFor(this));
-			$('.popup').show();
-		});
-
 		window.location.hash = 'day-' + new Date().toISOString().substr(0, 10);
-
-		ko.applyBindings(scheduler);
 
 		//scheduler.setupDataPolling(10);
 
@@ -72,8 +71,27 @@ scheduler.authenticate(function() {
 		alert('Could not find a data.json file, or there was a problem with the JSON file.');
 	});
 
-}, function(jqXHR, textStatus, errorThrown) {
-	alert(errorThrown);
+};
+
+scheduler.authenticate(getData, function(jqXHR, textStatus, errorThrown) {
+	var loading = $('.loading');
+	var loginScreen = new LoginScreen();
+	$.get('views/login.html', function(response) {
+		loading.hide();
+		$('.container').append(response);
+		var form = $('.login-form');
+		ko.applyBindings(loginScreen, form[0]);
+		form.on('submit', function(e) {
+			e.preventDefault();
+			$.post(this.action, $(this).serialize(), function() {
+				form.hide();
+				loading.show();
+				getData(function() {
+					loading.hide();
+				});
+			});
+		});
+	});
 });
 
 ko.bindingHandlers.sortable = {

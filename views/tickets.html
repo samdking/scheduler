@@ -1,0 +1,15 @@
+		<section class="tickets">
+			<table class="colours">
+				<tr data-bind="foreach: incompleteProjectStatuses">
+					<td data-bind="css: slug, attr: {title: name}"></td>
+				</tr>
+			</table>
+			<h1>Tickets <span data-bind="text: '(' + activeTickets().length + ')'"></span></h1>
+			<ul data-bind="foreach: activeTickets">
+				<li class="ticket" data-bind="draggable: { connectToSortable: '.tasks', snap: '.tasks' }, css: ['ticket-' + id, status().slug].join(' ')">
+					<strong data-bind="text: name"></strong>
+					<span data-bind="text: summary() || '---'"></span>
+				</li>
+			</ul>
+			<button data-bind="click: newTicket">New</button>
+		</section>

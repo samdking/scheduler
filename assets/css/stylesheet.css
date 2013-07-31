@@ -13,7 +13,7 @@ h1 { margin: 0 0 10px; text-align: center; font-size: 18px}
 .colours { margin: -15px 0 15px; height: 8px; width: 100%; border-spacing: 0;}
 
 .users { position: fixed; height: 100%; right: 0; top: 0; width: 82%; overflow: auto;}
-.users table { display: none; margin: -8px 0; border-spacing: 8px; }
+.users table { margin: -8px 0; border-spacing: 8px; }
 .users th { padding: 8px; background: #DDD;}
 .users td { vertical-align: top; background: #DDD; position: relative;}
 .users .day { padding: 8px; color: #FFF; background: #888;}
@@ -53,3 +53,6 @@ h1 { margin: 0 0 10px; text-align: center; font-size: 18px}
 .popup .close { position: absolute; right: 5px; top: 5px; display: block; width: 15px; height: 15px; background: #000; cursor: pointer;}
 
 .loading { padding: 20px; font-size: 14px;}
+
+.login-form { width: 500px; height: 300px; position: fixed; top: 50%; margin-top: -150px; left: 50%; margin-left: -250px;}
+.login-form input { display: block; padding: 3px 6px; width: 250px; margin: 5px auto;}

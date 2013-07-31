@@ -280,4 +280,21 @@
 					fail(jqXHR, textStatus, errorThrown);
 			});
 		};
+
+		this.loadViews = function(files, appendTo, callback) {
+			var counter = 0;
+			var total = files.length;
+			files.forEach(function(file) {
+				$.get(file, function(response) {
+					appendTo.append(response);
+					counter++;
+					if (counter == total)
+						callback();
+				});
+			});
+		};
+	}
+
+	function LoginScreen() {
+
 	}
