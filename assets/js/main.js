@@ -19,9 +19,14 @@ var getData = function(callback) {
 				$(this).parent('.popup').hide();
 			});
 			$('.users').on('click', '.task', function() {
-				$('.popup').hide();
-				scheduler.selectedTask(ko.dataFor(this));
 				$('.popup').show();
+				scheduler.selectedTicket(null);
+				scheduler.selectedTask(ko.dataFor(this));
+			});
+			$('.tickets').on('click', '.ticket', function() {
+				$('.popup').show();
+				scheduler.selectedTask(null);
+				scheduler.selectedTicket(ko.dataFor(this));
 			});
 			ko.applyBindings(scheduler);
 		});

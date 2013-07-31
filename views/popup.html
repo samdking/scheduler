@@ -1,13 +1,27 @@
 		<div class="popup">
-			<!-- ko with: selectedTask -->
-			<h2 data-bind="css: status().slug, text: ticket().label()"></h2>
-			<ul>
-				<li data-bind="html: '<strong>Actual time:</strong> ' + billedTime() + 'hrs (estimated: ' + estimatedTime() + 'hrs)'"></li>
-				<li data-bind="html: '<strong>User</strong> ' + user().name"></li>
-			</ul>
-			<p class="description" data-bind="text: description"></p>
-			<label for="task-status-selector">Ticket status:</label>
-			<select id="task-status-selector" data-bind="options: Ticket.prototype.projectStatuses, optionsText: 'name', value: $data.ticket().status"></select>
+			<!-- ko if: selectedTask -->
+				<!-- ko with: selectedTask -->
+				<h2 data-bind="css: status().slug, text: ticket()? ticket().label() : '[No Ticket]'"></h2>
+				<ul>
+					<li data-bind="html: '<strong>Actual time:</strong> ' + billedTime() + 'hrs (estimated: ' + estimatedTime() + 'hrs)'"></li>
+					<li data-bind="html: '<strong>User</strong> ' + user().name"></li>
+				</ul>
+				<p class="description" data-bind="text: description"></p>
+				<!-- ko if: ticket() -->
+				<label for="task-status-selector">Ticket status:</label>
+				<select id="task-status-selector" data-bind="options: Ticket.prototype.projectStatuses, optionsText: 'name', value: ticket().status()"></select>
+				<!-- /ko -->
+				<!-- /ko -->
+			<!-- /ko -->
+			<!-- ko if: selectedTicket -->
+				<!-- ko with: selectedTicket -->
+				<h2 data-bind="css: status().slug, text: label()"></h2>
+				<ul>
+					<li data-bind="html: '<strong>Allocated time:</strong> ' + allocatedTime() + 'hrs'"></li>
+					<li data-bind="html: '<strong>Total time:</strong> ' + totalTime() + 'hrs'"></li>
+				</ul>
+				<p class="description" data-bind="text: description"></p>
+				<!-- /ko -->
 			<!-- /ko -->
 			<a class="close"></a>
 		</div>

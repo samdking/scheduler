@@ -54,8 +54,11 @@
 	{
 		this.summary = ko.observable();
 		this.name = ko.observable();
-		this.status = ko.observable();
+		this.status = ko.observable({});
+		this.description = ko.observable();
 		this.department_uid = ko.observable();
+		this.allocatedTime = ko.observable();
+		this.totalTime = ko.observable();
 		this.label = ko.computed(function() {
 			var parts = [this.name(), this.summary()].filter(function(n) { return n; });
 			return parts.join(' - ');
@@ -64,10 +67,13 @@
 			this.id = data.uid || null;
 			this.summary(data.summary);
 			this.name(data.name || '[' + this.id + ']');
+			this.description(data.description);
 			this.status(ko.utils.arrayFirst(Ticket.prototype.projectStatuses, function(status) {
 				return status.id == data.project_status_uid;
 			}));
 			this.department_uid(parseInt(data.department_uid || 0, 10));
+			this.allocatedTime(parseInt(data.allocated_time, 10));
+			this.totalTime(parseInt(data.total_time, 10));
 		};
 		this.populate(data);
 	}
@@ -187,6 +193,7 @@
 		this.tickets = ko.observableArray([]);
 		this.users = ko.observableArray([]);
 		this.selectedTask = ko.observable();
+		this.selectedTicket = ko.observable();
 		this.activeTickets = ko.computed(function() {
 			var tickets = ko.utils.arrayFilter(this.tickets(), function(ticket) {
 				return ticket.status() && (ticket.status().complete === false) && ticket.department_uid() != 4;
