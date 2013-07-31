@@ -25,7 +25,7 @@
 		this.dbFields = function() {
 			return {
 				user_uid: self.user().id,
-				project_uid: self.ticket.id,
+				project_uid: self.ticket().id,
 				description: self.description,
 				datetime: self.date.toISOString().substr(0, 10),
 				task_status_uid: self.status().id,
@@ -65,6 +65,7 @@
 		}, this);
 		this.populate = function(data) {
 			this.id = data.uid || null;
+			this.url = data.url;
 			this.summary(data.summary);
 			this.name(data.name || '[' + this.id + ']');
 			this.description(data.description);
@@ -244,15 +245,16 @@
 		};
 		
 		this.setupDataPolling = function(seconds) {
+			var scheduler = this;
 			window.setInterval(function() {
 				console.log('polling for new data');
-				updateData();
+				scheduler.updateData();
 			}, 1000 * (seconds || 60));
 		};
 		
 		this.updateData = function() {
 			var scheduler = this;
-			$.getJSON('update.json.php', function(data) {
+			$.getJSON('data.json.php', {update: true}, function(data) {
 				var start = new Date().getTime();
 				(data.tickets || []).map(function(newData) {
 					var currentTicket = ko.utils.arrayFirst(scheduler.tickets(), function(ticket) {

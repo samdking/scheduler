@@ -29,6 +29,7 @@ var getData = function(callback) {
 				scheduler.selectedTicket(ko.dataFor(this));
 			});
 			ko.applyBindings(scheduler);
+			window.location.hash = window.location.hash || 'day-' + new Date().toISOString().substr(0, 10);
 		});
 
 		Task.prototype.taskStatuses = data.taskStatuses.map(function(status) {
@@ -68,9 +69,7 @@ var getData = function(callback) {
 		console.log('tasks: ' + taskCount);
 		console.log('tickets: ' + ticketCount);
 
-		window.location.hash = 'day-' + new Date().toISOString().substr(0, 10);
-
-		//scheduler.setupDataPolling(10);
+		scheduler.setupDataPolling(120);
 
 	}).fail(function() {
 		alert('Could not find a data.json file, or there was a problem with the JSON file.');
